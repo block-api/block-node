@@ -5,10 +5,11 @@ import (
 )
 
 const (
-	ErrNotAuthorized         = "not authorized"
-	ErrNotFound              = "not found"
-	ErrBlockAdded            = "block has been already added"
-	ErrBlockNodeInstantiated = "BlockNode instantiated"
+	ErrNotAuthorized            = "not authorized"
+	ErrNotFound                 = "not found"
+	ErrBlockAdded               = "block has been already added"
+	ErrBlockNodeInstantiated    = "BlockNode instantiated"
+	ErrTransporterNotConfigured = "transporter is not configured in config.yml file"
 )
 
 func New(text string) error {
