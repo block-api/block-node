@@ -5,9 +5,10 @@ import (
 )
 
 const (
-	ErrNotAuthorized = "not authorized"
-	ErrNotFound      = "not found"
-	ErrBlockAdded    = "block has been already added"
+	ErrNotAuthorized         = "not authorized"
+	ErrNotFound              = "not found"
+	ErrBlockAdded            = "block has been already added"
+	ErrBlockNodeInstantiated = "BlockNode instantiated"
 )
 
 func New(text string) error {

@@ -13,6 +13,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var instantiated bool
+
 type BlockNode struct {
 	nodeID      string
 	blocks      map[string]IBlock
@@ -84,6 +86,10 @@ func (bn *BlockNode) NodeID() string {
 
 // NewBlockNode creates new BlockNode struct
 func NewBlockNode(options *BlockNodeOptions) BlockNode {
+	if instantiated {
+		panic(errors.ErrBlockNodeInstantiated)
+	}
+
 	nodeID := "v" + strconv.Itoa(int(options.Version)) + "." + options.Name + "." + uuid.NewString()
 
 	bn := BlockNode{
@@ -92,6 +98,8 @@ func NewBlockNode(options *BlockNodeOptions) BlockNode {
 		blocks:      make(map[string]IBlock),
 		transporter: nil,
 	}
+
+	instantiated = true
 
 	return bn
 }
