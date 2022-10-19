@@ -9,7 +9,7 @@
 
 ## Overview
 
-**block-node** is relatively small framework written in Go language.
+**block-node** is open source, relatively small framework written in Go language.
 
 Main purpose of this project is to provide communication layer for application over protocols/services listed below:
 
@@ -29,6 +29,13 @@ In the future it will provide out of the box support for couple of databases as 
 ## Configuration
 
 In root directory you can find `config.example.yml` file which includes available options to configure.
+
+## TBD
+
+This section presents features to be discussed if they should be implemented in the future:
+
+- WebScokets
+- HTTP (eg. for REST API)
 
 ## Contact
 
