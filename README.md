@@ -1,4 +1,4 @@
-# @blockapi/block-node
+# @block-api/block-node
 
 ```text
 █▄▄ █░░ █▀█ █▀▀ █▄▀ ▄▄ █▄░█ █▀█ █▀▄ █▀▀
