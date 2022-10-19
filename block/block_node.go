@@ -1,7 +1,6 @@
 package block
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 
@@ -48,19 +47,6 @@ func (bn *BlockNode) Start() {
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Println(configDir)
-	fmt.Println(config)
-	fmt.Println(config.Transporter.Redis)
-	// path, err := os.Executable()
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// fmt.Println(path)
-	// currentDir := filepath.Dir(path)
-	// fmt.Println(currentDir)
-	// return nil
 }
 
 // AddBlock adds new Block struct to BlockNode blocks map
