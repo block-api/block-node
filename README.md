@@ -34,7 +34,7 @@ In root directory you can find `config.example.yml` file which includes availabl
 
 This section presents features to be discussed if they should be implemented in the future:
 
-- WebScokets
+- WebSockets
 - HTTP (eg. for REST API)
 
 ## Contact
