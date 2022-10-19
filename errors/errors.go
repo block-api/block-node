@@ -1,0 +1,15 @@
+package errors
+
+import (
+	"errors"
+)
+
+const (
+	ErrNotAuthorized = "not authorized"
+	ErrNotFound      = "not found"
+	ErrBlockAdded    = "block has been already added"
+)
+
+func New(text string) error {
+	return errors.New(text)
+}

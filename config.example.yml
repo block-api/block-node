@@ -1,0 +1,18 @@
+debug: true
+transport:
+  redis:
+    host: localhost
+    port: 6379
+    username:
+    password:
+    db: 0
+  nats:
+  p2p:
+  tcp:
+# database:
+#   couch_db:
+#     host: 127.0.0.1
+#     port: 5984
+#     username: admin
+#     password: admin
+#     prefix: "auth_"
