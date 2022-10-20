@@ -66,6 +66,16 @@ func (bn *BlockNode) AddBlock(blocks ...IBlock) error {
 	return nil
 }
 
+func (bn *BlockNode) Stop() error {
+	err := bn.transporter.Disconnect()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (bn *BlockNode) NodeID() string {
 	return bn.nodeID
 }
