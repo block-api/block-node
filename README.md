@@ -39,4 +39,4 @@ This section presents features to be discussed if they should be implemented in 
 
 ## Contact
 
-If you have any questions or ideas feel free to reach me out on [discord](https://discord.gg/z6qBpYNDs5).
+If you have any questions or ideas feel free to reach us out on [twitter](https://twitter.com/blockapi_dev).
