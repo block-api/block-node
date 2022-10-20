@@ -32,6 +32,13 @@ func (r *Redis) Disconnect() error {
 }
 
 func (r *Redis) Send(target string, payload interface{}) error {
+	res := r.pubClient.Publish(ctx, ChanMessage, NewTransportPocket(target, payload))
+
+	return res.Err()
+}
+
+func (r *Redis) Subscribe(channel Channel) error {
+
 	return nil
 }
 

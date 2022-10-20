@@ -1,14 +1,27 @@
 package transporter
 
+type Channel string
+
+const (
+	ChanDiscovery = "discovery"
+	ChanMessage   = "msg"
+)
+
 type Transporter interface {
 	Connect() error
 	Disconnect() error
 	Send(target string, payload interface{}) error
+	Subscribe(channel Channel) error
 }
 
-type Channel int
+type TransportPocket struct {
+	target  string
+	payload interface{}
+}
 
-const (
-	ChanDiscovery = iota + 1
-	ChanMessage
-)
+func NewTransportPocket(target string, payload interface{}) TransportPocket {
+	return TransportPocket{
+		target,
+		payload,
+	}
+}
