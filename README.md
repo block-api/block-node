@@ -36,6 +36,9 @@ This section presents features to be discussed if they should be implemented in 
 
 - WebSockets
 - HTTP (eg. for REST API)
+- Command like "git" to commit files to node - ak'a file storage
+  - compressing files before sending to node
+  - options if distributed and kept on node itself or on separate "storage" type node, or on cloud storage like s3/azure blob
 
 ## Contact
 
