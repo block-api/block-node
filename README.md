@@ -34,6 +34,7 @@ In root directory you can find `config.example.yml` file which includes availabl
 
 This section presents features to be discussed if they should be implemented in the future:
 
+- Generation of ETH wallet for node, pub/priv keys, for identification and to sign `TransportPocket`
 - WebSockets
 - HTTP (eg. for REST API)
 - Command like "git" to commit files to node - ak'a file storage
