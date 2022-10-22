@@ -28,6 +28,8 @@ In the future it will provide out of the box support for couple of databases as 
 
 ![image](./docs/images/block_node_web20.png)
 
+![image](./docs/images/block_node_web30.png)
+
 ## Configuration
 
 In root directory you can find `config.example.yml` file which includes available options to configure.
