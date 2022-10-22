@@ -8,6 +8,7 @@ import (
 	"github.com/block-api/block-node/db"
 	"github.com/block-api/block-node/errors"
 	"github.com/block-api/block-node/log"
+	"github.com/block-api/block-node/network"
 	"github.com/block-api/block-node/transporter"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
@@ -21,6 +22,7 @@ type BlockNode struct {
 	config      config.Config
 	options     BlockNodeOptions
 	transporter transporter.Transporter
+	network     network.Network
 	database    db.Database
 }
 
@@ -54,6 +56,7 @@ func (bn *BlockNode) Start() {
 	}
 
 	bn.loadDatabase()
+	bn.loadNetwork()
 }
 
 // AddBlock adds new Block struct to BlockNode blocks map
@@ -89,6 +92,19 @@ func (bn *BlockNode) NodeID() string {
 
 func (bn *BlockNode) loadDatabase() {
 	bn.database = db.NewDatabase(&bn.config.Database)
+}
+
+func (bn *BlockNode) loadNetwork() {
+	bn.network = network.NewNetwork(bn.transporter)
+	err := bn.network.Start()
+
+	if err != nil {
+		log.Panic(err.Error())
+	}
+
+	bn.network.Send(transporter.ChanDiscovery, map[string]string{
+		"status": "ok",
+	})
 }
 
 // NewBlockNode creates new BlockNode struct

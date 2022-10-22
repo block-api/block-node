@@ -12,18 +12,18 @@ const (
 type Transporter interface {
 	Connect() error
 	Disconnect() error
-	Send(target string, payload interface{}) error
+	Send(channel Channel, payload interface{}) error
 	Subscribe(channel Channel) error
 }
 
 type TransportPocket struct {
-	target  string
-	payload interface{}
+	Target  string
+	Payload interface{}
 }
 
 func NewTransportPocket(target string, payload interface{}) TransportPocket {
 	return TransportPocket{
-		target,
-		payload,
+		Target:  target,
+		Payload: payload,
 	}
 }
