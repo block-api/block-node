@@ -20,10 +20,10 @@ func (n *Network) Start() error {
 	return nil
 }
 
-func (n *Network) Send(channel transporter.Channel, payload interface{}) {
-	log.Debug("published to: " + string(channel))
+func (n *Network) Send(pocket Pocket) {
+	log.Debug("published to: " + string(pocket.Channel()))
 
-	err := n.transporter.Send(channel, payload)
+	err := n.transporter.Send(pocket.Channel(), pocket)
 	if err != nil {
 		log.Warning(err.Error())
 	}

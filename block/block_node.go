@@ -1,6 +1,7 @@
 package block
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 
@@ -64,16 +65,43 @@ func (bn *BlockNode) AddBlock(blocks ...IBlock) error {
 	var bk IBlock
 
 	for _, b := range blocks {
+		// fmt.Println(b.GetName())
 		if bn.blocks[b.GetName()] != bk {
 			return errors.New(errors.ErrBlockAdded)
 		}
 
 		bn.blocks[b.GetName()] = b
-
 		log.Debug("block added: " + b.GetName())
 	}
 
 	return nil
+}
+
+func (bn BlockNode) Blocks() map[string][]string {
+	var blocks map[string][]string = make(map[string][]string)
+	for name, blck := range bn.blocks {
+		actions := blck.Actions()
+		fmt.Println("XXX")
+		fmt.Println(actions)
+		for actionName := range actions {
+			fmt.Println(actionName)
+			blocks[name] = append(blocks[name], actionName)
+		}
+
+		// fmt.Println(name)
+		// fmt.Println(blkActions)
+		// for _, action := range blkActions {
+		// blocks[name] = append(blocks[name], blkActions...)
+		// }
+		// for actionName := range bn.Blocks {
+		// 	fmt.Println(actionName)
+		// }
+
+		// fmt.Println(name)
+
+	}
+	fmt.Println(blocks)
+	return blocks
 }
 
 func (bn *BlockNode) Stop() error {
@@ -90,6 +118,22 @@ func (bn *BlockNode) NodeID() string {
 	return bn.nodeID
 }
 
+func (bn *BlockNode) GetName() string {
+	return bn.options.Name
+}
+
+func (bn *BlockNode) Version() uint {
+	return bn.options.Version
+}
+
+func (bn *BlockNode) Database() *db.Database {
+	return &bn.database
+}
+
+func (bn *BlockNode) Network() *network.Network {
+	return &bn.network
+}
+
 func (bn *BlockNode) loadDatabase() {
 	bn.database = db.NewDatabase(&bn.config.Database)
 }
@@ -101,10 +145,6 @@ func (bn *BlockNode) loadNetwork() {
 	if err != nil {
 		log.Panic(err.Error())
 	}
-
-	bn.network.Send(transporter.ChanDiscovery, map[string]string{
-		"status": "ok",
-	})
 }
 
 // NewBlockNode creates new BlockNode struct

@@ -15,15 +15,3 @@ type Transporter interface {
 	Send(channel Channel, payload interface{}) error
 	Subscribe(channel Channel) error
 }
-
-type TransportPocket struct {
-	Target  string
-	Payload interface{}
-}
-
-func NewTransportPocket(target string, payload interface{}) TransportPocket {
-	return TransportPocket{
-		Target:  target,
-		Payload: payload,
-	}
-}
