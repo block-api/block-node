@@ -14,11 +14,13 @@ type Config struct {
 	ApplicationConfig `yaml:"-"`
 	Debug             bool              `yaml:"debug"`
 	Transporter       ConfigTransporter `yaml:"transporter"`
+	Database          ConfigDatabase    `yaml:"database"`
 	/// ---
-	Database ConfigDatabase `yaml:"database"`
-	RPC      ConfigRPC      `yaml:"rpc"`
+	RPC ConfigRPC `yaml:"rpc"`
 }
 
+// -- Transporters -- //
+//
 type ConfigTransporter struct {
 	Redis *ConfigRedisTransporter `yaml:"redis"`
 }
@@ -32,11 +34,13 @@ type ConfigRedisTransporter struct {
 }
 
 /// -----
-type ConfigBlock struct {
+type ConfigDatabase struct {
+	LevelDB map[string]ConfigLevelDB `yaml:"leveldb"`
+	CouchDB ConfigDatabaseCouchDB    `yaml:"couch_db"`
 }
 
-type ConfigDatabase struct {
-	CouchDB ConfigDatabaseCouchDB `yaml:"couch_db"`
+type ConfigLevelDB struct {
+	DbPath string `yaml:"path"`
 }
 
 type ConfigDatabaseCouchDB struct {

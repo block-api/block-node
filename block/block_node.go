@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/block-api/block-node/config"
+	"github.com/block-api/block-node/db"
 	"github.com/block-api/block-node/errors"
 	"github.com/block-api/block-node/log"
 	"github.com/block-api/block-node/transporter"
@@ -17,8 +18,10 @@ var instantiated bool
 type BlockNode struct {
 	nodeID      string
 	blocks      map[string]IBlock
+	config      config.Config
 	options     BlockNodeOptions
 	transporter transporter.Transporter
+	database    db.Database
 }
 
 type BlockNodeOptions struct {
@@ -43,10 +46,14 @@ func (bn *BlockNode) Start() {
 		panic(err)
 	}
 
+	bn.config = config
+
 	err = bn.loadTransporter(config.Transporter)
 	if err != nil {
 		panic(err)
 	}
+
+	bn.loadDatabase()
 }
 
 // AddBlock adds new Block struct to BlockNode blocks map
@@ -78,6 +85,10 @@ func (bn *BlockNode) Stop() error {
 
 func (bn *BlockNode) NodeID() string {
 	return bn.nodeID
+}
+
+func (bn *BlockNode) loadDatabase() {
+	bn.database = db.NewDatabase(&bn.config.Database)
 }
 
 // NewBlockNode creates new BlockNode struct
