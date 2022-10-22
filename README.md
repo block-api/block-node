@@ -18,7 +18,7 @@
 
 ## Overview
 
-**block-node** is open source, relatively small framework written in Go language.
+**block-node** is open source, framework written in Go language.
 
 Main purpose of this project is to provide communication layer for application over protocols/services listed below:
 
