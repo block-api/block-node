@@ -1,4 +1,5 @@
 debug: true
+type: node # node / storage
 transport:
   redis:
     host: localhost
@@ -9,10 +10,15 @@ transport:
   nats:
   p2p:
   tcp:
-# database:
+database:
+  leveldb:
+    main:
+      dbPath: /var/block-node/data/main.db
 #   couch_db:
 #     host: 127.0.0.1
 #     port: 5984
 #     username: admin
 #     password: admin
-#     prefix: "auth_"
+#     prefix: "bn_"
+storage:
+  type: ""
