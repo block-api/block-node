@@ -5,7 +5,9 @@
 █▄█ █▄▄ █▄█ █▄▄ █░█ ░░ █░▀█ █▄█ █▄▀ ██▄
 ```
 
-![image](./docs/images/gopher-golang.gif)
+<center>
+![image](./docs/images/gopher-golang.png)
+</center>
 
 > :warning: **This project is in development**: Do not use in production environment
 
