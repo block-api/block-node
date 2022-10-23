@@ -1,13 +1,13 @@
 # @block-api/block-node
 
+<p align="center" width="100%">
+<img src="./docs/images/gopher-golang.png" alt="golang gopher" width="250"/>
+</p>
+
 ```text
 █▄▄ █░░ █▀█ █▀▀ █▄▀ ▄▄ █▄░█ █▀█ █▀▄ █▀▀
 █▄█ █▄▄ █▄█ █▄▄ █░█ ░░ █░▀█ █▄█ █▄▀ ██▄
 ```
-
-<p align="center" width="100%">
-<img src="./docs/images/gopher-golang.png" alt="golang gopher"/>
-</p>
 
 > :warning: **This project is in development**: Do not use in production environment
 
