@@ -2,7 +2,6 @@ package transporter
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/block-api/block-node/config"
 	"github.com/block-api/block-node/log"
@@ -19,18 +18,18 @@ const (
 )
 
 type SubDaemon struct {
+	nodeID     string
 	channel    Channel
 	daemonChan chan DaemonCmd
-	// dataChan   chan interface{}
-	outChan  chan<- interface{}
-	redisSub *redis.PubSub
+	outChan    chan Pocket[[]byte]
+	redisSub   *redis.PubSub
 }
 
 type Redis struct {
 	Transporter
+	nodeID    string
 	subClient *redis.Client
 	pubClient *redis.Client
-	// subClients []*redis.PubSub
 	subDaemon []SubDaemon
 	pubDaemon map[string]PubDaemon
 }
@@ -50,39 +49,43 @@ func (r *Redis) Disconnect() error {
 	return r.pubClient.Close()
 }
 
-func (r *Redis) Send(channel Channel, payload interface{}) error {
-	fmt.Println(r.pubDaemon[string(channel)])
-
+func (r *Redis) Send(channel Channel, payload []byte) error {
 	if r.pubDaemon[string(channel)].dataChan == nil {
 		pubDaemon := NewPubDaemon(channel, r.pubClient)
 		pubDaemon.Start()
 
-		pubDaemon.dataChan <- payload
+		r.pubDaemon[string(channel)] = pubDaemon
+		r.pubDaemon[string(channel)].dataChan <- payload
+
+		log.Debug("published to: " + string(channel))
+
 		return nil
 	}
+
+	log.Debug("published to: " + string(channel))
 
 	r.pubDaemon[string(channel)].dataChan <- payload
 
 	return nil
 }
 
-func (r *Redis) Subscribe(channel Channel) error {
+func (r *Redis) Subscribe(channel Channel, callback func(pocket Pocket[[]byte])) error {
 	sub := r.subClient.Subscribe(ctx, string(channel))
 
-	subDaemon := NewSubDaemon(channel, sub)
-	subDaemon.Start()
+	subDaemon := NewSubDaemon(r.nodeID, channel, sub)
+	subDaemon.Start(callback)
 
 	r.subDaemon = append(r.subDaemon, subDaemon)
 
 	return nil
 }
 
-func NewRedis(configRedis *config.ConfigRedisTransporter) (*Redis, error) {
+func NewRedis(nodeID string, configRedis *config.ConfigRedisTransporter) (*Redis, error) {
 	redisOptions := &redis.Options{
 		Addr:     configRedis.Host + ":" + configRedis.Port,
 		Username: configRedis.Username,
-		Password: configRedis.Password, // no password set
-		DB:       int(configRedis.Db),  // use default DB
+		Password: configRedis.Password,
+		DB:       int(configRedis.Db),
 	}
 
 	redisSub := redis.NewClient(redisOptions)
@@ -91,44 +94,9 @@ func NewRedis(configRedis *config.ConfigRedisTransporter) (*Redis, error) {
 	log.Debug("redis instances created: " + configRedis.Host + ":" + configRedis.Port)
 
 	return &Redis{
+		nodeID:    nodeID,
 		subClient: redisSub,
 		pubClient: redisPub,
 		pubDaemon: make(map[string]PubDaemon),
 	}, nil
-}
-
-// -- SubDaemon -- //
-
-func (sd *SubDaemon) Start() {
-	go func(sd *SubDaemon) {
-		log.Debug("SubDaemon started: " + string(sd.channel))
-
-		// B:
-		for msg := range sd.redisSub.Channel() {
-			switch msg.Channel {
-			case string(sd.channel):
-				log.Warning("---> receive")
-				log.Warning(msg.Payload)
-			}
-		}
-
-		defer close(sd.daemonChan)
-		// defer close(sd.dataChan)
-		defer close(sd.outChan)
-		defer sd.redisSub.Close()
-	}(sd)
-}
-
-func (sd *SubDaemon) Stop() {
-	sd.daemonChan <- DaemonStop
-}
-
-func NewSubDaemon(channel Channel, redisSub *redis.PubSub) SubDaemon {
-	return SubDaemon{
-		channel:    channel,
-		daemonChan: make(chan DaemonCmd),
-		// dataChan:   make(chan interface{}),
-		outChan:  make(chan<- interface{}),
-		redisSub: redisSub,
-	}
 }

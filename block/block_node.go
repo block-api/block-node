@@ -1,7 +1,6 @@
 package block
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 
@@ -81,26 +80,12 @@ func (bn BlockNode) Blocks() map[string][]string {
 	var blocks map[string][]string = make(map[string][]string)
 	for name, blck := range bn.blocks {
 		actions := blck.Actions()
-		fmt.Println("XXX")
-		fmt.Println(actions)
+
 		for actionName := range actions {
-			fmt.Println(actionName)
 			blocks[name] = append(blocks[name], actionName)
 		}
 
-		// fmt.Println(name)
-		// fmt.Println(blkActions)
-		// for _, action := range blkActions {
-		// blocks[name] = append(blocks[name], blkActions...)
-		// }
-		// for actionName := range bn.Blocks {
-		// 	fmt.Println(actionName)
-		// }
-
-		// fmt.Println(name)
-
 	}
-	fmt.Println(blocks)
 	return blocks
 }
 
@@ -139,7 +124,7 @@ func (bn *BlockNode) loadDatabase() {
 }
 
 func (bn *BlockNode) loadNetwork() {
-	bn.network = network.NewNetwork(bn.transporter)
+	bn.network = network.NewNetwork(bn.transporter, &bn.database)
 	err := bn.network.Start()
 
 	if err != nil {

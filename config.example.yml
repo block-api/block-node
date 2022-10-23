@@ -14,6 +14,7 @@ database:
   leveldb:
     main:
       dbPath: /var/block-node/data/main.db
+    # required database
     discovery:
       dbPath: /var/block-node/data/discovery.db
   couch_db:

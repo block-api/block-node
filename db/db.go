@@ -35,3 +35,11 @@ func NewDatabase(config *config.ConfigDatabase) Database {
 
 	return newDb
 }
+
+func (db *Database) GetLevelDB(name string) *leveldb.DB {
+	if db.leveldb[name] != nil {
+		return db.leveldb[name]
+	}
+
+	return nil
+}
