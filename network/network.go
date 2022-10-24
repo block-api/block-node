@@ -47,11 +47,11 @@ func (n *Network) Receive(pocket transporter.Pocket[[]byte]) {
 		}
 
 		newPocket := transporter.Pocket[transporter.PayloadDiscovery]{
-			Channel: pocket.Channel,
-			From:    pocket.From,
-			Target:  pocket.Target,
-			Payload: discoveryPayload,
-			Hash:    pocket.Hash,
+			Channel:  pocket.Channel,
+			FromID:   pocket.FromID,
+			TargetID: pocket.TargetID,
+			Payload:  discoveryPayload,
+			Hash:     pocket.Hash,
 		}
 
 		n.ProcessPocketDiscovery(newPocket)
