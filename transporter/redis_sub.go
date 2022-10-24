@@ -32,7 +32,7 @@ func (sd *SubDaemon) Start(callback func(pocket Pocket[[]byte])) {
 				}
 				log.Debug("parsed new transporter Pocket")
 
-				if (pocket.From == sd.nodeID) || (pocket.Target != "" && pocket.Target != sd.nodeID) {
+				if (pocket.FromID == sd.nodeID) || (pocket.TargetID != "" && pocket.TargetID != sd.nodeID) {
 					log.Debug("skip self/not target")
 					break
 				}

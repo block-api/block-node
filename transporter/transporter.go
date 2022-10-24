@@ -16,7 +16,7 @@ type Transporter interface {
 	Subscribe(channel Channel, callback func(pocket Pocket[[]byte])) error
 }
 
-type PayloadMessage struct {
+type PayloadMessage []struct {
 	Data interface{} `json:"data"`
 }
 
