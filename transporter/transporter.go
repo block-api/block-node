@@ -6,7 +6,7 @@ const (
 	ChanPrefix    = "bn_"
 	ChanDiscovery = ChanPrefix + "discovery"
 	ChanMessage   = ChanPrefix + "msg"
-	ChanStorage   = ChanPrefix + "store"
+	ChanStorage   = ChanPrefix + "storage"
 )
 
 type Transporter interface {
