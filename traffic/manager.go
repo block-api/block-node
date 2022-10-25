@@ -42,8 +42,6 @@ func (m *Manager) AddDestination(nodeID utils.NodeID, versionedName utils.NodeVe
 	}
 
 	for _, actionName := range actions {
-
-		m.destinations[versionedName][blockName][actionName] = make([]utils.NodeID, 0, 1)
 		m.destinations[versionedName][blockName][actionName] = append(m.destinations[versionedName][blockName][actionName], nodeID)
 	}
 
