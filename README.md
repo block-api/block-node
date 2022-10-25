@@ -27,9 +27,7 @@
 Main purpose of this project is to provide communication layer for application over protocols/services listed below:
 
 - [ ] P2P
-- [ ] TCP
 - [ ] Redis
-- [ ] NATS
 
 This should allow you to build decentralized applications (Web 3.0) as well as microservices (Web 2.0).
 
@@ -53,10 +51,20 @@ In root directory you can find `config.example.yml` file which includes availabl
 
 This section presents features to be discussed if they should be implemented in the future:
 
-- Generation of ETH wallet for node, pub/priv keys, for identification and to sign `TransportPocket`
+Communication:
+
+- TCP
+- NATS
 - WebSockets
 - HTTP (eg. for REST API)
-- Command like "git" to commit files to node - ak'a file storage
+
+Security:
+
+- Generation of ETH wallet for node, pub/priv keys, for identification and to sign `TransportPocket`
+
+Others:
+
+- Command like upload files to node - ak'a file storage
   - compressing files before sending to node
   - options if distributed and kept on node itself or on separate "storage" type node, or on cloud storage like s3/azure blob
 
