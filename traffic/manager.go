@@ -32,6 +32,7 @@ func (m *Manager) Nodes() Nodes {
 // AddDestination adds information about topology of known nodes to manager
 func (m *Manager) AddDestination(nodeID utils.NodeID, versionedName utils.NodeVersionName, blockName utils.BlockName, actions []utils.ActionName) error {
 	m.destinationsMutex.Lock()
+	defer m.destinationsMutex.Unlock()
 
 	if m.destinations[versionedName] == nil {
 		m.destinations[versionedName] = make(map[utils.BlockName]map[utils.ActionName][]utils.NodeID)
@@ -44,8 +45,6 @@ func (m *Manager) AddDestination(nodeID utils.NodeID, versionedName utils.NodeVe
 	for _, actionName := range actions {
 		m.destinations[versionedName][blockName][actionName] = append(m.destinations[versionedName][blockName][actionName], nodeID)
 	}
-
-	m.destinationsMutex.Unlock()
 
 	return nil
 }
