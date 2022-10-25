@@ -45,9 +45,6 @@ In the future it will provide out of the box support for couple of databases as 
 **Web 3.0 example**
 ![image](./docs/images/block_node_web30.png)
 
-**TrafficManager**
-![image](./docs/images/block_node_traffic_manager.png)
-
 ## Configuration
 
 In root directory you can find `config.example.yml` file which includes available options to configure.
