@@ -41,9 +41,10 @@ func (n *Network) Receive(pocket transporter.Pocket[[]byte]) {
 	log.Debug("Network.Receive Pocket[[]byte]")
 
 	if pocket.Channel == transporter.ChanDiscovery {
-		discoveryPayload, err := decodeDiscoveryPayload(&pocket)
+		discoveryPayload, err := decodePayload[transporter.PayloadDiscovery](&pocket)
 		if err != nil {
 			log.Warning(err.Error())
+			return
 		}
 
 		newPocket := transporter.Pocket[transporter.PayloadDiscovery]{
