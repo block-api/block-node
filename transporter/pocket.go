@@ -8,15 +8,16 @@ import (
 )
 
 type Pocket[P []byte | any] struct {
-	Channel  Channel `json:"channel"`
-	FromID   string  `json:"from"`
-	TargetID string  `json:"target"`
-	Payload  P       `json:"payload"`
-	Hash     string  `json:"hash"`
+	Channel      Channel `json:"channel"`
+	FromID       string  `json:"from_id"`
+	TargetID     string  `json:"target_id"`
+	TargetAction string  `json:"target_action"`
+	Payload      P       `json:"payload"`
+	Hash         string  `json:"hash"`
 }
 
 // NewPocket creates new network pocket
-func NewPocket[P PayloadDiscovery | PayloadMessage | PayloadAction[any]](channel Channel, fromID string, targetID string, payload P) Pocket[[]byte] {
+func NewPocket[P PayloadDiscovery | PayloadMessage[any]](channel Channel, fromID string, targetID string, payload P) Pocket[[]byte] {
 	var payloadBytes bytes.Buffer
 	pocket := Pocket[[]byte]{
 		Channel:  channel,

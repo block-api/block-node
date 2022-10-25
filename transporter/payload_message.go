@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 )
 
-type PayloadAction[T any] struct {
+type PayloadMessage[T any] struct {
 	Data T `json:"data"`
 }
 
-func (pa *PayloadAction[T]) DataBytes(data T) ([]byte, error) {
+func (pa *PayloadMessage[T]) DataBytes(data T) ([]byte, error) {
 	var dataBytes bytes.Buffer
 
 	err := json.NewEncoder(&dataBytes).Encode(data)
@@ -20,8 +20,8 @@ func (pa *PayloadAction[T]) DataBytes(data T) ([]byte, error) {
 	return dataBytes.Bytes(), nil
 }
 
-func NewPayloadAction[T any](data T) PayloadAction[T] {
-	return PayloadAction[T]{
+func NewPayloadMessage[T any](data T) PayloadMessage[T] {
+	return PayloadMessage[T]{
 		Data: data,
 	}
 }

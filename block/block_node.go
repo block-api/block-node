@@ -9,7 +9,9 @@ import (
 	"github.com/block-api/block-node/errors"
 	"github.com/block-api/block-node/log"
 	"github.com/block-api/block-node/network"
+	"github.com/block-api/block-node/traffic"
 	"github.com/block-api/block-node/transporter"
+	"github.com/block-api/block-node/utils"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 )
@@ -17,13 +19,15 @@ import (
 var instantiated bool
 
 type BlockNode struct {
-	nodeID      string
-	blocks      map[string]IBlock
-	config      config.Config
-	options     BlockNodeOptions
-	transporter transporter.Transporter
-	network     network.Network
-	database    db.Database
+	nodeID          string
+	nodeVersionName string
+	blocks          map[utils.BlockName]IBlock
+	config          config.Config
+	options         BlockNodeOptions
+	transporter     transporter.Transporter
+	network         network.Network
+	database        db.Database
+	trafficManager  traffic.Manager
 }
 
 type BlockNodeOptions struct {
@@ -33,7 +37,7 @@ type BlockNodeOptions struct {
 
 // Start will start BlockNode
 func (bn *BlockNode) Start() {
-	log.Debug("starting " + bn.options.Name)
+	log.Debug("starting " + bn.options.Name + ", id: " + bn.nodeID)
 
 	err := godotenv.Load()
 	if err != nil {
@@ -57,6 +61,9 @@ func (bn *BlockNode) Start() {
 
 	bn.loadDatabase()
 	bn.loadNetwork()
+
+	log.Default("# Name: " + bn.nodeVersionName + " is running")
+	log.Default("# NodeID: " + bn.nodeID)
 }
 
 // AddBlock adds new Block struct to BlockNode blocks map
@@ -70,14 +77,17 @@ func (bn *BlockNode) AddBlock(blocks ...IBlock) error {
 		}
 
 		bn.blocks[b.GetName()] = b
-		log.Debug("block added: " + b.GetName())
+		log.Debug("block added: " + b.GetName().String())
+
+		bn.trafficManager.AddDestination(utils.NodeID(bn.nodeID), utils.NodeVersionName(bn.nodeVersionName), b.GetName(), b.ActionsNames())
 	}
 
 	return nil
 }
 
-func (bn BlockNode) Blocks() map[string][]string {
-	var blocks map[string][]string = make(map[string][]string)
+func (bn BlockNode) Blocks() map[utils.BlockName][]utils.ActionName {
+	var blocks map[utils.BlockName][]utils.ActionName = make(map[utils.BlockName][]utils.ActionName)
+
 	for name, blck := range bn.blocks {
 		actions := blck.Actions()
 
@@ -139,12 +149,15 @@ func NewBlockNode(options *BlockNodeOptions) BlockNode {
 	}
 
 	nodeID := "v" + strconv.Itoa(int(options.Version)) + "." + options.Name + "." + uuid.NewString()
+	nodeVersionName := "v" + strconv.Itoa(int(options.Version)) + "." + options.Name
 
 	bn := BlockNode{
-		nodeID:      nodeID,
-		options:     *options,
-		blocks:      make(map[string]IBlock),
-		transporter: nil,
+		nodeID:          nodeID,
+		nodeVersionName: nodeVersionName,
+		options:         *options,
+		blocks:          make(map[utils.BlockName]IBlock),
+		transporter:     nil,
+		trafficManager:  traffic.NewManager(),
 	}
 
 	instantiated = true
