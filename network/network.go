@@ -42,8 +42,7 @@ func (n *Network) Send(pocket transporter.Pocket[[]byte]) {
 func (n *Network) Receive(payload []byte) {
 	log.Debug("Network.Receive []byte")
 
-	pocket := transporter.Pocket[[]byte]{}
-	err := json.Unmarshal([]byte(payload), &pocket)
+	pocket, err := decodePocket(payload)
 	if err != nil {
 		log.Warning(err.Error())
 		return
