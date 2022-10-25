@@ -19,8 +19,8 @@ import (
 var instantiated bool
 
 type BlockNode struct {
-	nodeID          string
-	nodeVersionName string
+	nodeID          utils.NodeID
+	nodeVersionName utils.NodeVersionName
 	blocks          map[utils.BlockName]IBlock
 	config          config.Config
 	options         BlockNodeOptions
@@ -37,7 +37,7 @@ type BlockNodeOptions struct {
 
 // Start will start BlockNode
 func (bn *BlockNode) Start() {
-	log.Debug("starting " + bn.options.Name + ", id: " + bn.nodeID)
+	log.Debug("starting " + bn.options.Name + ", id: " + string(bn.nodeID))
 
 	err := godotenv.Load()
 	if err != nil {
@@ -62,8 +62,8 @@ func (bn *BlockNode) Start() {
 	bn.loadDatabase()
 	bn.loadNetwork()
 
-	log.Default("# Name: " + bn.nodeVersionName + " is running")
-	log.Default("# NodeID: " + bn.nodeID)
+	log.Default("# Name: " + string(bn.nodeVersionName) + " is running")
+	log.Default("# NodeID: " + string(bn.nodeID))
 }
 
 // AddBlock adds new Block struct to BlockNode blocks map
@@ -109,7 +109,7 @@ func (bn *BlockNode) Stop() error {
 	return nil
 }
 
-func (bn *BlockNode) NodeID() string {
+func (bn *BlockNode) NodeID() utils.NodeID {
 	return bn.nodeID
 }
 
@@ -134,7 +134,7 @@ func (bn *BlockNode) loadDatabase() {
 }
 
 func (bn *BlockNode) loadNetwork() {
-	bn.network = network.NewNetwork(bn.transporter, &bn.database)
+	bn.network = network.NewNetwork(bn.nodeID, bn.transporter, &bn.database)
 	err := bn.network.Start()
 
 	if err != nil {
@@ -152,8 +152,8 @@ func NewBlockNode(options *BlockNodeOptions) BlockNode {
 	nodeVersionName := "v" + strconv.Itoa(int(options.Version)) + "." + options.Name
 
 	bn := BlockNode{
-		nodeID:          nodeID,
-		nodeVersionName: nodeVersionName,
+		nodeID:          utils.NodeID(nodeID),
+		nodeVersionName: utils.NodeVersionName(nodeVersionName),
 		options:         *options,
 		blocks:          make(map[utils.BlockName]IBlock),
 		transporter:     nil,

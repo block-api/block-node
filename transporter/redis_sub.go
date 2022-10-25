@@ -4,20 +4,21 @@ import (
 	"encoding/json"
 
 	"github.com/block-api/block-node/log"
+	"github.com/block-api/block-node/utils"
 	"github.com/go-redis/redis/v8"
 )
 
-func NewSubDaemon(nodeID string, channel Channel, redisSub *redis.PubSub) SubDaemon {
+func NewSubDaemon(nodeID utils.NodeID, channel Channel, redisSub *redis.PubSub) SubDaemon {
 	return SubDaemon{
 		nodeID:     nodeID,
 		channel:    channel,
 		daemonChan: make(chan DaemonCmd),
-		outChan:    make(chan Pocket[[]byte]),
+		outChan:    make(chan []byte),
 		redisSub:   redisSub,
 	}
 }
 
-func (sd *SubDaemon) Start(callback func(pocket Pocket[[]byte])) {
+func (sd *SubDaemon) Start(callback func(payload []byte)) {
 	go func(sd *SubDaemon) {
 		log.Debug("SubDaemon started: " + string(sd.channel))
 
@@ -25,19 +26,7 @@ func (sd *SubDaemon) Start(callback func(pocket Pocket[[]byte])) {
 		for msg := range sd.redisSub.Channel() {
 			switch msg.Channel {
 			case string(sd.channel):
-				pocket, err := sd.processPayload(msg.Payload)
-				if err != nil {
-					log.Warning(err.Error())
-					break
-				}
-				log.Debug("parsed new transporter Pocket")
-
-				if (pocket.FromID == sd.nodeID) || (pocket.TargetID != "" && pocket.TargetID != sd.nodeID) {
-					log.Debug("skip self/not target")
-					break
-				}
-
-				sd.outChan <- *pocket
+				sd.outChan <- []byte(msg.Payload)
 			}
 		}
 
@@ -67,6 +56,6 @@ func (sd *SubDaemon) processPayload(payload string) (*Pocket[[]byte], error) {
 	return &pocket, nil
 }
 
-func (sd *SubDaemon) OutChat() chan Pocket[[]byte] {
+func (sd *SubDaemon) OutChan() chan []byte {
 	return sd.outChan
 }

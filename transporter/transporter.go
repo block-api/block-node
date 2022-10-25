@@ -13,7 +13,7 @@ type Transporter interface {
 	Connect() error
 	Disconnect() error
 	Send(channel Channel, payload []byte) error
-	Subscribe(channel Channel, callback func(pocket Pocket[[]byte])) error
+	Subscribe(channel Channel, callback func(payload []byte)) error
 }
 
 type Event uint
