@@ -1,8 +1,6 @@
 package transporter
 
 import (
-	"encoding/json"
-
 	"github.com/block-api/block-node/log"
 	"github.com/block-api/block-node/utils"
 	"github.com/go-redis/redis/v8"
@@ -44,16 +42,6 @@ func (sd *SubDaemon) Start(callback func(payload []byte)) {
 
 func (sd *SubDaemon) Stop() {
 	sd.daemonChan <- DaemonStop
-}
-
-func (sd *SubDaemon) processPayload(payload string) (*Pocket[[]byte], error) {
-	pocket := Pocket[[]byte]{}
-	err := json.Unmarshal([]byte(payload), &pocket)
-	if err != nil {
-		return nil, err
-	}
-
-	return &pocket, nil
 }
 
 func (sd *SubDaemon) OutChan() chan []byte {
