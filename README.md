@@ -75,4 +75,4 @@ Others:
 
 If you have any questions or ideas feel free to reach us out on [twitter](https://twitter.com/blockapi_dev).
 
-To support development of this project you can donate at this address: `blockapi.wallet`.
+To support development of this project you can donate at this address: `blockapi.wallet` - `0x7a42639f09729eb02de32f1dd21447806cc52ba8`.
