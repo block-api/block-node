@@ -26,16 +26,19 @@
 
 Main purpose of this project is to provide communication layer for application over protocols/services listed below:
 
+- [x] Redis
+- [ ] NATS
 - [ ] P2P
-- [ ] Redis
 
 This should allow you to build decentralized applications (Web 3.0) as well as microservices (Web 2.0).
 
 In the future it will provide out of the box support for couple of databases as well:
 
-- [ ] LevelDB
+- [x] LevelDB
+- [ ] SQLite
 - [ ] MongoDB
 - [ ] CouchDB
+- [ ] PostgreSQL
 
 **Web 2.0 example**
 ![image](./docs/images/block_node_web20.png)
@@ -68,6 +71,8 @@ Others:
   - compressing files before sending to node
   - options if distributed and kept on node itself or on separate "storage" type node, or on cloud storage like s3/azure blob
 
-## Contact
+## Contact & Support
 
 If you have any questions or ideas feel free to reach us out on [twitter](https://twitter.com/blockapi_dev).
+
+To support development of this project you can donate at this address: `blockapi.wallet`.
