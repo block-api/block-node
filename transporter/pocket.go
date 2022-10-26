@@ -4,21 +4,21 @@ import (
 	"bytes"
 	"encoding/json"
 
-	"github.com/block-api/block-node/utils"
+	"github.com/block-api/block-node/common/types"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
 type Pocket[P []byte | any] struct {
 	Channel      Channel      `json:"channel"`
-	FromID       utils.NodeID `json:"from_id"`
-	TargetID     utils.NodeID `json:"target_id"`
+	FromID       types.NodeID `json:"from_id"`
+	TargetID     types.NodeID `json:"target_id"`
 	TargetAction string       `json:"target_action"`
 	Payload      P            `json:"payload"`
 	Hash         string       `json:"hash"`
 }
 
 // NewPocket creates new network pocket
-func NewPocket[P PayloadDiscovery | PayloadMessage[any]](channel Channel, fromID utils.NodeID, targetID utils.NodeID, payload P) Pocket[[]byte] {
+func NewPocket[P PayloadDiscovery | PayloadMessage[any]](channel Channel, fromID types.NodeID, targetID types.NodeID, payload P) Pocket[[]byte] {
 	var payloadBytes bytes.Buffer
 	pocket := Pocket[[]byte]{
 		Channel:  channel,

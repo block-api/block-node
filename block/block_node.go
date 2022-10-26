@@ -4,6 +4,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/block-api/block-node/common/types"
 	"github.com/block-api/block-node/config"
 	"github.com/block-api/block-node/db"
 	"github.com/block-api/block-node/errors"
@@ -11,7 +12,6 @@ import (
 	"github.com/block-api/block-node/network"
 	"github.com/block-api/block-node/traffic"
 	"github.com/block-api/block-node/transporter"
-	"github.com/block-api/block-node/utils"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 )
@@ -19,9 +19,9 @@ import (
 var instantiated bool
 
 type BlockNode struct {
-	nodeID          utils.NodeID
-	nodeVersionName utils.NodeVersionName
-	blocks          map[utils.BlockName]IBlock
+	nodeID          types.NodeID
+	nodeVersionName types.NodeVersionName
+	blocks          map[types.BlockName]IBlock
 	config          config.Config
 	options         BlockNodeOptions
 	transporter     transporter.Transporter
@@ -79,14 +79,14 @@ func (bn *BlockNode) AddBlock(blocks ...IBlock) error {
 		bn.blocks[b.GetName()] = b
 		log.Debug("block added: " + b.GetName().String())
 
-		bn.trafficManager.AddDestination(utils.NodeID(bn.nodeID), utils.NodeVersionName(bn.nodeVersionName), b.GetName(), b.ActionsNames())
+		bn.trafficManager.AddDestination(types.NodeID(bn.nodeID), types.NodeVersionName(bn.nodeVersionName), b.GetName(), b.ActionsNames())
 	}
 
 	return nil
 }
 
-func (bn BlockNode) Blocks() map[utils.BlockName][]utils.ActionName {
-	var blocks map[utils.BlockName][]utils.ActionName = make(map[utils.BlockName][]utils.ActionName)
+func (bn BlockNode) Blocks() map[types.BlockName][]types.ActionName {
+	var blocks map[types.BlockName][]types.ActionName = make(map[types.BlockName][]types.ActionName)
 
 	for name, blck := range bn.blocks {
 		actions := blck.Actions()
@@ -109,7 +109,7 @@ func (bn *BlockNode) Stop() error {
 	return nil
 }
 
-func (bn *BlockNode) NodeID() utils.NodeID {
+func (bn *BlockNode) NodeID() types.NodeID {
 	return bn.nodeID
 }
 
@@ -152,10 +152,10 @@ func NewBlockNode(options *BlockNodeOptions) BlockNode {
 	nodeVersionName := "v" + strconv.Itoa(int(options.Version)) + "." + options.Name
 
 	bn := BlockNode{
-		nodeID:          utils.NodeID(nodeID),
-		nodeVersionName: utils.NodeVersionName(nodeVersionName),
+		nodeID:          types.NodeID(nodeID),
+		nodeVersionName: types.NodeVersionName(nodeVersionName),
 		options:         *options,
-		blocks:          make(map[utils.BlockName]IBlock),
+		blocks:          make(map[types.BlockName]IBlock),
 		transporter:     nil,
 		trafficManager:  traffic.NewManager(),
 	}

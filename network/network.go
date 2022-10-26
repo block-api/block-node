@@ -3,14 +3,14 @@ package network
 import (
 	"encoding/json"
 
+	"github.com/block-api/block-node/common/types"
 	"github.com/block-api/block-node/db"
 	"github.com/block-api/block-node/log"
 	"github.com/block-api/block-node/transporter"
-	"github.com/block-api/block-node/utils"
 )
 
 type Network struct {
-	nodeID      utils.NodeID
+	nodeID      types.NodeID
 	db          *db.Database
 	transporter transporter.Transporter
 }
@@ -72,7 +72,7 @@ func (n *Network) Receive(payload []byte) {
 	}
 }
 
-func NewNetwork(nodeID utils.NodeID, transporter transporter.Transporter, db *db.Database) Network {
+func NewNetwork(nodeID types.NodeID, transporter transporter.Transporter, db *db.Database) Network {
 	return Network{
 		nodeID:      nodeID,
 		db:          db,

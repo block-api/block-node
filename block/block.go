@@ -1,45 +1,45 @@
 package block
 
 import (
-	"github.com/block-api/block-node/utils"
+	"github.com/block-api/block-node/common/types"
 )
 
 type IBlock interface {
-	GetName() utils.BlockName
-	Actions() map[utils.ActionName]BlockAction
-	ActionsNames() []utils.ActionName
-	AddAction(name utils.ActionName, action BlockAction)
+	GetName() types.BlockName
+	Actions() map[types.ActionName]BlockAction
+	ActionsNames() []types.ActionName
+	AddAction(name types.ActionName, action BlockAction)
 }
 
 type BlockAction func(payload interface{}) error
 
 type Block struct {
 	IBlock
-	Name    utils.BlockName
-	actions map[utils.ActionName]BlockAction
+	Name    types.BlockName
+	actions map[types.ActionName]BlockAction
 }
 
-func NewBlock(name utils.BlockName) Block {
+func NewBlock(name types.BlockName) Block {
 	return Block{
 		Name:    name,
-		actions: make(map[utils.ActionName]BlockAction),
+		actions: make(map[types.ActionName]BlockAction),
 	}
 }
 
-func (b *Block) GetName() utils.BlockName {
+func (b *Block) GetName() types.BlockName {
 	return b.Name
 }
 
-func (b *Block) Actions() map[utils.ActionName]BlockAction {
+func (b *Block) Actions() map[types.ActionName]BlockAction {
 	return b.actions
 }
 
-func (b *Block) AddAction(name utils.ActionName, action BlockAction) {
+func (b *Block) AddAction(name types.ActionName, action BlockAction) {
 	b.actions[name] = action
 }
 
-func (b *Block) ActionsNames() []utils.ActionName {
-	var actionsNames []utils.ActionName
+func (b *Block) ActionsNames() []types.ActionName {
+	var actionsNames []types.ActionName
 
 	for actionName := range b.actions {
 		actionsNames = append(actionsNames, actionName)

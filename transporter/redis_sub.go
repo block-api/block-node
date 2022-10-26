@@ -1,12 +1,12 @@
 package transporter
 
 import (
+	"github.com/block-api/block-node/common/types"
 	"github.com/block-api/block-node/log"
-	"github.com/block-api/block-node/utils"
 	"github.com/go-redis/redis/v8"
 )
 
-func NewSubDaemon(nodeID utils.NodeID, channel Channel, redisSub *redis.PubSub) SubDaemon {
+func NewSubDaemon(nodeID types.NodeID, channel Channel, redisSub *redis.PubSub) SubDaemon {
 	return SubDaemon{
 		nodeID:     nodeID,
 		channel:    channel,

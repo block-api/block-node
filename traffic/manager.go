@@ -3,11 +3,11 @@ package traffic
 import (
 	"sync"
 
-	"github.com/block-api/block-node/utils"
+	"github.com/block-api/block-node/common/types"
 )
 
-type Destinations map[utils.NodeVersionName]map[utils.BlockName]map[utils.ActionName][]utils.NodeID
-type Nodes []utils.NodeID
+type Destinations map[types.NodeVersionName]map[types.BlockName]map[types.ActionName][]types.NodeID
+type Nodes []types.NodeID
 
 // Manager struct
 type Manager struct {
@@ -20,7 +20,7 @@ type Manager struct {
 func NewManager() Manager {
 	return Manager{
 		destinationsMutex: new(sync.Mutex),
-		destinations:      make(map[utils.NodeVersionName]map[utils.BlockName]map[utils.ActionName][]utils.NodeID),
+		destinations:      make(map[types.NodeVersionName]map[types.BlockName]map[types.ActionName][]types.NodeID),
 	}
 }
 
@@ -30,16 +30,16 @@ func (m *Manager) Nodes() Nodes {
 }
 
 // AddDestination adds information about topology of known nodes to manager
-func (m *Manager) AddDestination(nodeID utils.NodeID, versionedName utils.NodeVersionName, blockName utils.BlockName, actions []utils.ActionName) error {
+func (m *Manager) AddDestination(nodeID types.NodeID, versionedName types.NodeVersionName, blockName types.BlockName, actions []types.ActionName) error {
 	m.destinationsMutex.Lock()
 	defer m.destinationsMutex.Unlock()
 
 	if m.destinations[versionedName] == nil {
-		m.destinations[versionedName] = make(map[utils.BlockName]map[utils.ActionName][]utils.NodeID)
+		m.destinations[versionedName] = make(map[types.BlockName]map[types.ActionName][]types.NodeID)
 	}
 
 	if m.destinations[versionedName][blockName] == nil {
-		m.destinations[versionedName][blockName] = make(map[utils.ActionName][]utils.NodeID)
+		m.destinations[versionedName][blockName] = make(map[types.ActionName][]types.NodeID)
 	}
 
 	for _, actionName := range actions {

@@ -1,4 +1,4 @@
-package utils
+package types
 
 type (
 	NodeID          string

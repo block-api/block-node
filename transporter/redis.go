@@ -3,9 +3,9 @@ package transporter
 import (
 	"context"
 
+	"github.com/block-api/block-node/common/types"
 	"github.com/block-api/block-node/config"
 	"github.com/block-api/block-node/log"
-	"github.com/block-api/block-node/utils"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -19,7 +19,7 @@ const (
 )
 
 type SubDaemon struct {
-	nodeID     utils.NodeID
+	nodeID     types.NodeID
 	channel    Channel
 	daemonChan chan DaemonCmd
 	outChan    chan []byte
@@ -28,7 +28,7 @@ type SubDaemon struct {
 
 type Redis struct {
 	Transporter
-	nodeID    utils.NodeID
+	nodeID    types.NodeID
 	subClient *redis.Client
 	pubClient *redis.Client
 	subDaemon []SubDaemon
@@ -81,7 +81,7 @@ func (r *Redis) Subscribe(channel Channel, callback func(payload []byte)) error 
 	return nil
 }
 
-func NewRedis(nodeID utils.NodeID, configRedis *config.ConfigRedisTransporter) (*Redis, error) {
+func NewRedis(nodeID types.NodeID, configRedis *config.ConfigRedisTransporter) (*Redis, error) {
 	redisOptions := &redis.Options{
 		Addr:     configRedis.Host + ":" + configRedis.Port,
 		Username: configRedis.Username,
