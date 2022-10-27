@@ -1,6 +1,8 @@
 package block
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -10,7 +12,6 @@ import (
 	"github.com/block-api/block-node/db"
 	"github.com/block-api/block-node/errors"
 	"github.com/block-api/block-node/log"
-	"github.com/block-api/block-node/network"
 	"github.com/block-api/block-node/traffic"
 	"github.com/block-api/block-node/transporter"
 	"github.com/google/uuid"
@@ -20,13 +21,13 @@ import (
 var instantiated bool
 
 type BlockNode struct {
-	nodeID            types.NodeID
-	nodeVersionName   types.NodeVersionName
-	blocks            map[types.BlockName]IBlock
-	config            config.Config
-	options           BlockNodeOptions
-	transporter       transporter.Transporter
-	network           network.Network
+	nodeID          types.NodeID
+	nodeVersionName types.NodeVersionName
+	blocks          map[types.BlockName]IBlock
+	config          config.Config
+	options         BlockNodeOptions
+	transporter     transporter.Transporter
+	// network           network.Network
 	database          db.Database
 	trafficManager    traffic.Manager
 	daemonChan        chan uint
@@ -39,7 +40,7 @@ type BlockNodeOptions struct {
 }
 
 // Start will start BlockNode
-func (bn *BlockNode) Start() {
+func (bn *BlockNode) Start() error {
 	log.Debug("starting " + bn.options.Name + ", id: " + string(bn.nodeID))
 
 	err := godotenv.Load()
@@ -63,7 +64,18 @@ func (bn *BlockNode) Start() {
 	}
 
 	bn.loadDatabase()
-	bn.loadNetwork()
+
+	err = bn.transporter.Subscribe(transporter.ChanDiscovery, bn.Receive)
+	if err != nil {
+		log.Warning(err.Error())
+		return err
+	}
+
+	err = bn.transporter.Subscribe(transporter.ChanMessage, bn.Receive)
+	if err != nil {
+		log.Warning(err.Error())
+		return err
+	}
 
 	log.Default("# Name: " + string(bn.nodeVersionName) + " is running")
 	log.Default("# NodeID: " + string(bn.nodeID))
@@ -73,11 +85,12 @@ func (bn *BlockNode) Start() {
 		Blocks: bn.Blocks(),
 	}
 
-	pocket := transporter.NewPocket[transporter.PayloadDiscovery](transporter.ChanDiscovery, bn.nodeVersionName, bn.nodeID, "", payload)
-	bn.network.Send(pocket)
+	pocket := transporter.NewPocket(transporter.ChanDiscovery, bn.nodeVersionName, bn.nodeID, nil, nil, payload)
+	bn.Send(pocket)
 
 	go bn.daemon(bn.daemonChan)
 
+	return nil
 }
 
 // AddBlock adds new Block struct to BlockNode blocks map
@@ -117,12 +130,12 @@ func (bn *BlockNode) Stop() error {
 		Event: transporter.EventDisconnected,
 	}
 
-	discoveryDisconnect := transporter.NewPocket(transporter.ChanDiscovery, bn.nodeVersionName, bn.nodeID, "", payload)
-	bn.network.Send(discoveryDisconnect)
+	discoveryDisconnect := transporter.NewPocket(transporter.ChanDiscovery, bn.nodeVersionName, bn.nodeID, nil, nil, payload)
+	bn.Send(discoveryDisconnect)
 
 	bn.daemonChan <- 1
 
-	err := bn.network.Stop()
+	err := bn.transporter.Disconnect()
 	if err != nil {
 		return err
 	}
@@ -150,22 +163,22 @@ func (bn *BlockNode) Database() *db.Database {
 	return &bn.database
 }
 
-func (bn *BlockNode) Network() *network.Network {
-	return &bn.network
-}
+// func (bn *BlockNode) Network() *network.Network {
+// 	return &bn.network
+// }
 
 func (bn *BlockNode) loadDatabase() {
 	bn.database = db.NewDatabase(&bn.config.Database)
 }
 
-func (bn *BlockNode) loadNetwork() {
-	bn.network = network.NewNetwork(bn.nodeID, bn.transporter, &bn.trafficManager, &bn.database)
-	err := bn.network.Start()
+// func (bn *BlockNode) loadNetwork() {
+// 	bn.network = network.NewNetwork(bn.nodeID, bn.transporter, &bn.trafficManager, &bn.database)
+// 	err := bn.network.Start()
 
-	if err != nil {
-		log.Panic(err.Error())
-	}
-}
+// 	if err != nil {
+// 		log.Panic(err.Error())
+// 	}
+// }
 
 func (bn *BlockNode) daemon(daemonChan chan uint) {
 	log.Debug("BlockNode daemon start")
@@ -181,8 +194,8 @@ L:
 				Blocks: bn.Blocks(),
 			}
 
-			pocket := transporter.NewPocket(transporter.ChanDiscovery, bn.nodeVersionName, bn.nodeID, "", payload)
-			bn.network.Send(pocket)
+			pocket := transporter.NewPocket(transporter.ChanDiscovery, bn.nodeVersionName, bn.nodeID, nil, nil, payload)
+			bn.Send(pocket)
 
 			for nodeID, lastSeen := range bn.trafficManager.Nodes() {
 				if nodeID == bn.nodeID {
@@ -201,6 +214,86 @@ L:
 	}
 
 	log.Debug("BlockNode daemon quit")
+}
+
+func (bn *BlockNode) Send(pocket transporter.Pocket[[]byte]) error {
+	var err error
+
+	if pocket.Channel == transporter.ChanMessage && pocket.TargetAction != nil {
+		err = pocket.TargetAction.Validate()
+		if err != nil {
+			return err
+		}
+
+		if pocket.TargetAction.Name == types.NodeName(bn.options.Name) && pocket.TargetAction.Version == bn.options.Version && bn.blocks[pocket.TargetAction.Block] != nil {
+			actions := bn.blocks[pocket.TargetAction.Block].Actions()
+
+			if actions[pocket.TargetAction.Action] != nil {
+				actions[pocket.TargetAction.Action](pocket.Payload)
+				return nil
+			}
+
+		}
+
+		return errors.ErrInvalidTargetAction
+	}
+
+	pocketBytes, err := json.Marshal(pocket)
+	if err != nil {
+		log.Warning(err.Error())
+		return err
+	}
+
+	err = bn.transporter.Send(pocket.Channel, pocketBytes)
+	if err != nil {
+		log.Warning(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (bn *BlockNode) Receive(payload []byte) {
+	log.Debug("Network.Receive []byte")
+
+	pocket, err := DecodePocket(payload)
+	if err != nil {
+		log.Warning(err.Error())
+		return
+	}
+
+	if pocket.TargetID != nil && *pocket.TargetID != "" && *pocket.TargetID != bn.nodeID {
+		log.Debug("not a target, skipping")
+		return
+	}
+
+	if pocket.Channel == transporter.ChanDiscovery {
+		if pocket.FromID == bn.nodeID {
+			return
+		}
+
+		discoveryPayload, err := DecodePayload[transporter.PayloadDiscovery](pocket.Payload)
+		if err != nil {
+			log.Warning(err.Error())
+			return
+		}
+
+		newPocket := transporter.Pocket[transporter.PayloadDiscovery]{
+			Channel:     pocket.Channel,
+			VersionName: pocket.VersionName,
+			FromID:      pocket.FromID,
+			TargetID:    pocket.TargetID,
+			Payload:     discoveryPayload,
+			Hash:        pocket.Hash,
+		}
+
+		bn.ProcessPocketDiscovery(newPocket)
+		return
+	}
+
+	if pocket.Channel == transporter.ChanMessage {
+		fmt.Println(pocket)
+	}
 }
 
 var heartbeatInterval = 5

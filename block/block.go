@@ -11,19 +11,25 @@ type IBlock interface {
 	AddAction(name types.ActionName, action BlockAction)
 }
 
-type BlockAction func(payload interface{}) error
+type BlockAction func(payload []byte) (any, error)
 
 type Block struct {
 	IBlock
-	Name    types.BlockName
-	actions map[types.ActionName]BlockAction
+	Name      types.BlockName
+	blockNode *BlockNode
+	actions   map[types.ActionName]BlockAction
 }
 
-func NewBlock(name types.BlockName) Block {
+func NewBlock(bn *BlockNode, name types.BlockName) Block {
 	return Block{
-		Name:    name,
-		actions: make(map[types.ActionName]BlockAction),
+		blockNode: bn,
+		Name:      name,
+		actions:   make(map[types.ActionName]BlockAction),
 	}
+}
+
+func (b *Block) BlockNode() *BlockNode {
+	return b.blockNode
 }
 
 func (b *Block) GetName() types.BlockName {

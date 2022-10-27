@@ -1,4 +1,4 @@
-package network
+package block
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"github.com/block-api/block-node/transporter"
 )
 
-func decodePocket(pocketBytes []byte) (transporter.Pocket[[]byte], error) {
+func DecodePocket(pocketBytes []byte) (transporter.Pocket[[]byte], error) {
 	pocket := transporter.Pocket[[]byte]{}
 
 	err := json.Unmarshal(pocketBytes, &pocket)
@@ -19,10 +19,10 @@ func decodePocket(pocketBytes []byte) (transporter.Pocket[[]byte], error) {
 	return pocket, nil
 }
 
-func decodePayload[T transporter.PayloadDiscovery | transporter.PayloadMessage[any]](pocket *transporter.Pocket[[]byte]) (T, error) {
+func DecodePayload[T interface{}](payloadBytes []byte) (T, error) {
 	var payload T
 
-	err := json.Unmarshal(pocket.Payload, &payload)
+	err := json.Unmarshal(payloadBytes, &payload)
 	if err != nil {
 		return payload, err
 	}

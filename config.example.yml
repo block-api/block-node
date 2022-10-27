@@ -1,6 +1,8 @@
 debug: true
-type: node # node / storage
+type: "node" # node / storage
 transport:
+  timeout: 30 # in seconds
+  heartbeatInterval: 5 # in seconds
   redis:
     host: localhost
     port: 6379
