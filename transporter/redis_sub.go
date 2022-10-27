@@ -20,7 +20,6 @@ func (sd *SubDaemon) Start(callback func(payload []byte)) {
 	go func(sd *SubDaemon) {
 		log.Debug("SubDaemon started: " + string(sd.channel))
 
-		// B:
 		for msg := range sd.redisSub.Channel() {
 			switch msg.Channel {
 			case string(sd.channel):

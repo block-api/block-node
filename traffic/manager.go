@@ -29,10 +29,18 @@ func (m *Manager) Nodes() Nodes {
 	return m.nodes
 }
 
+func (m *Manager) Destinations() Destinations {
+	return m.destinations
+}
+
 // AddDestination adds information about topology of known nodes to manager
 func (m *Manager) AddDestination(nodeID types.NodeID, versionedName types.NodeVersionName, blockName types.BlockName, actions []types.ActionName) error {
 	m.destinationsMutex.Lock()
 	defer m.destinationsMutex.Unlock()
+
+	if nodeIDInSlice(m.nodes, nodeID) {
+		return nil
+	}
 
 	if m.destinations[versionedName] == nil {
 		m.destinations[versionedName] = make(map[types.BlockName]map[types.ActionName][]types.NodeID)
@@ -46,10 +54,47 @@ func (m *Manager) AddDestination(nodeID types.NodeID, versionedName types.NodeVe
 		m.destinations[versionedName][blockName][actionName] = append(m.destinations[versionedName][blockName][actionName], nodeID)
 	}
 
+	m.nodes = append(m.nodes, nodeID)
+
 	return nil
 }
 
-func (m *Manager) Send(data any) error {
+// RemoveNodeID removes node id from all mentions in the topology
+func (m *Manager) RemoveNodeID(nodeID types.NodeID) {
+	m.destinationsMutex.Lock()
+	defer m.destinationsMutex.Unlock()
 
-	return nil
+	m.nodes = removeFromNodeIDSlice(m.nodes, nodeID)
+
+	for nodeVersionName, blocks := range m.destinations {
+		for blockName, actions := range blocks {
+			for actionName, nodes := range actions {
+				if nodeIDInSlice(nodes, nodeID) {
+					m.destinations[nodeVersionName][blockName][actionName] = removeFromNodeIDSlice(nodes, nodeID)
+				}
+			}
+		}
+	}
+}
+
+func nodeIDInSlice(slice []types.NodeID, nodeID types.NodeID) bool {
+	for _, id := range slice {
+		if id == nodeID {
+			return true
+		}
+	}
+
+	return false
+}
+
+func removeFromNodeIDSlice(slice []types.NodeID, value types.NodeID) []types.NodeID {
+	var removeIDX int
+	for idx, id := range slice {
+		if id == value {
+			removeIDX = idx
+			break
+		}
+	}
+
+	return append(slice[:removeIDX], slice[removeIDX+1:]...)
 }

@@ -100,8 +100,14 @@ func (bn BlockNode) Blocks() map[types.BlockName][]types.ActionName {
 }
 
 func (bn *BlockNode) Stop() error {
-	err := bn.transporter.Disconnect()
+	payload := transporter.PayloadDiscovery{
+		Event: transporter.EventDisconnected,
+	}
 
+	discoveryDisconnect := transporter.NewPocket[transporter.PayloadDiscovery](transporter.ChanDiscovery, bn.nodeVersionName, bn.nodeID, "", payload)
+	bn.network.Send(discoveryDisconnect)
+
+	err := bn.network.Stop()
 	if err != nil {
 		return err
 	}
@@ -121,6 +127,10 @@ func (bn *BlockNode) Version() uint {
 	return bn.options.Version
 }
 
+func (bn *BlockNode) VersionName() types.NodeVersionName {
+	return bn.nodeVersionName
+}
+
 func (bn *BlockNode) Database() *db.Database {
 	return &bn.database
 }
@@ -134,7 +144,7 @@ func (bn *BlockNode) loadDatabase() {
 }
 
 func (bn *BlockNode) loadNetwork() {
-	bn.network = network.NewNetwork(bn.nodeID, bn.transporter, &bn.database)
+	bn.network = network.NewNetwork(bn.nodeID, bn.transporter, &bn.trafficManager, &bn.database)
 	err := bn.network.Start()
 
 	if err != nil {

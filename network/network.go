@@ -6,13 +6,15 @@ import (
 	"github.com/block-api/block-node/common/types"
 	"github.com/block-api/block-node/db"
 	"github.com/block-api/block-node/log"
+	"github.com/block-api/block-node/traffic"
 	"github.com/block-api/block-node/transporter"
 )
 
 type Network struct {
-	nodeID      types.NodeID
-	db          *db.Database
-	transporter transporter.Transporter
+	nodeID         types.NodeID
+	db             *db.Database
+	transporter    transporter.Transporter
+	trafficManager *traffic.Manager
 }
 
 func (n *Network) Start() error {
@@ -21,6 +23,16 @@ func (n *Network) Start() error {
 	if err != nil {
 		log.Warning(err.Error())
 
+		return err
+	}
+
+	return nil
+}
+
+func (n *Network) Stop() error {
+	err := n.transporter.Disconnect()
+
+	if err != nil {
 		return err
 	}
 
@@ -61,21 +73,23 @@ func (n *Network) Receive(payload []byte) {
 		}
 
 		newPocket := transporter.Pocket[transporter.PayloadDiscovery]{
-			Channel:  pocket.Channel,
-			FromID:   pocket.FromID,
-			TargetID: pocket.TargetID,
-			Payload:  discoveryPayload,
-			Hash:     pocket.Hash,
+			Channel:     pocket.Channel,
+			VersionName: pocket.VersionName,
+			FromID:      pocket.FromID,
+			TargetID:    pocket.TargetID,
+			Payload:     discoveryPayload,
+			Hash:        pocket.Hash,
 		}
 
 		n.ProcessPocketDiscovery(newPocket)
 	}
 }
 
-func NewNetwork(nodeID types.NodeID, transporter transporter.Transporter, db *db.Database) Network {
+func NewNetwork(nodeID types.NodeID, transporter transporter.Transporter, trafficManager *traffic.Manager, db *db.Database) Network {
 	return Network{
-		nodeID:      nodeID,
-		db:          db,
-		transporter: transporter,
+		nodeID:         nodeID,
+		db:             db,
+		transporter:    transporter,
+		trafficManager: trafficManager,
 	}
 }

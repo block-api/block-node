@@ -21,6 +21,5 @@ type Event uint
 const (
 	EventConnected Event = iota + 1
 	EventDisconnected
-	EventPing
-	EventPong
+	EventHeartbeat
 )
