@@ -30,7 +30,6 @@ func (n *Network) Start() error {
 }
 
 func (n *Network) Stop() error {
-	n.trafficManager.Stop()
 	err := n.transporter.Disconnect()
 
 	if err != nil {

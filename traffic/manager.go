@@ -1,15 +1,11 @@
 package traffic
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
 	"github.com/block-api/block-node/common/types"
-	"github.com/block-api/block-node/log"
 )
-
-var heartbeatInterval = 5
 
 type Destinations map[types.NodeVersionName]map[types.BlockName]map[types.ActionName][]types.NodeID
 type Nodes map[types.NodeID]time.Time
@@ -20,7 +16,6 @@ type Manager struct {
 	destinationsMutex *sync.Mutex
 	destinations      Destinations
 	nodes             Nodes
-	daemonChan        chan uint
 }
 
 // NewManager creates new Manager struct
@@ -30,16 +25,9 @@ func NewManager(nodeID types.NodeID) Manager {
 		destinationsMutex: new(sync.Mutex),
 		destinations:      make(map[types.NodeVersionName]map[types.BlockName]map[types.ActionName][]types.NodeID),
 		nodes:             make(Nodes),
-		daemonChan:        make(chan uint),
 	}
 
-	go manager.daemon(manager.daemonChan)
-
 	return manager
-}
-
-func (m *Manager) Stop() {
-	m.daemonChan <- 1
 }
 
 // Nodes returns array of known node ID's
@@ -103,32 +91,8 @@ func (m *Manager) RemoveNodeID(nodeID types.NodeID) {
 	delete(m.nodes, nodeID)
 }
 
-func (m *Manager) daemon(daemonChan chan uint) {
-	log.Debug("Traffic Manager daemon start")
-
-	ticker := time.NewTicker(time.Duration(heartbeatInterval) * time.Second)
-L:
-	for {
-		select {
-		case <-ticker.C:
-			for nodeID, lastSeen := range m.nodes {
-				if nodeID == m.nodeID {
-					continue
-				}
-
-				dateDiff := time.Since(lastSeen).Seconds()
-				if dateDiff > float64(heartbeatInterval+1) {
-					m.RemoveNodeID(nodeID)
-				}
-			}
-
-			fmt.Println(m.destinations)
-		case <-daemonChan:
-			break L
-		}
-	}
-
-	log.Debug("Traffic Manager daemon quit")
+func (m *Manager) UpdateLastSeen(nodeID types.NodeID) {
+	m.nodes[nodeID] = time.Now()
 }
 
 func nodeIDInSlice(slice []types.NodeID, nodeID types.NodeID) bool {
