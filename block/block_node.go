@@ -1,7 +1,6 @@
 package block
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -196,7 +195,6 @@ L:
 				}
 			}
 
-			fmt.Println(bn.trafficManager.Destinations())
 		case <-daemonChan:
 			break L
 		}
