@@ -15,7 +15,7 @@ func (n *Network) ProcessPocketDiscovery(pocket transporter.Pocket[transporter.P
 				continue
 			}
 		}
-		// return
+		return
 	}
 
 	if pocket.Payload.Event == transporter.EventDisconnected {
