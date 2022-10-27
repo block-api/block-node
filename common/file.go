@@ -17,7 +17,7 @@ const (
 )
 const (
 	JSON Type = "JSON"
-	YML       = "YML"
+	YML  Type = "YML"
 )
 
 type File struct {
