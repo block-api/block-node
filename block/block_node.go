@@ -158,16 +158,16 @@ func NewBlockNode(options *BlockNodeOptions) BlockNode {
 		panic(errors.ErrBlockNodeInstantiated)
 	}
 
-	nodeID := "v" + strconv.Itoa(int(options.Version)) + "." + options.Name + "." + uuid.NewString()
-	nodeVersionName := "v" + strconv.Itoa(int(options.Version)) + "." + options.Name
+	nodeID := types.NodeID("v" + strconv.Itoa(int(options.Version)) + "." + options.Name + "." + uuid.NewString())
+	nodeVersionName := types.NodeVersionName("v" + strconv.Itoa(int(options.Version)) + "." + options.Name)
 
 	bn := BlockNode{
-		nodeID:          types.NodeID(nodeID),
-		nodeVersionName: types.NodeVersionName(nodeVersionName),
+		nodeID:          nodeID,
+		nodeVersionName: nodeVersionName,
 		options:         *options,
 		blocks:          make(map[types.BlockName]IBlock),
 		transporter:     nil,
-		trafficManager:  traffic.NewManager(),
+		trafficManager:  traffic.NewManager(nodeID),
 	}
 
 	instantiated = true
