@@ -9,36 +9,34 @@
 █▄█ █▄▄ █▄█ █▄▄ █░█ ░░ █░▀█ █▄█ █▄▀ ██▄
 ```
 
-> :warning: **This project is in development**: Do not use in production environment
+> :warning: **This project is in development**: Do not use in production environment!
 
 - [Overview](#overview)
-- [Configuration](#configuration)
-- [How it works](#how-it-works)
-  - [P2P](/docs/p2p.md)
-  - [Redis/Nats](/docs/redis_nats.md)
-  - [Database](/docs/database.md)
-  - [File Storage](/docs/file_storage.md)
+- [Configuration](./docs/configuration.md)
+- [Examples](#examples)
 - [TBD](#tbd)
 
 ## Overview
 
-**block-node** is open source, framework written in Go language.
+**block-node** is open source, framework written in Go language for building microservices and decentralized systems.
 
-Main purpose of this project is to provide communication layer for application over protocols/services listed below:
+Main purpose of this project is to provide communication layer between nodes allowing you to focus on buidling application layer on top of it.
+
+Supported communication methods:
 
 - [x] Redis
 - [ ] NATS
 - [ ] P2P
 
-This should allow you to build decentralized applications (Web 3.0) as well as microservices (Web 2.0).
+**block-node** is using [*LevelDB*](https://github.com/syndtr/goleveldb) database for storing internal data (eg. information about current topology of the network). You can configure additional *LevelDB* databases in [config file](./docs/configuration.md) which can be utilized for project needs. 
 
-In the future it will provide out of the box support for couple of databases as well:
+In the future we will provide support for additional databases:
 
 - [x] LevelDB
 - [ ] SQLite
-- [ ] MongoDB
-- [ ] CouchDB
 - [ ] PostgreSQL
+
+**Below you can find infratructure examples** 
 
 **Web 2.0 example**
 ![image](./docs/images/block_node_web20.png)
@@ -46,26 +44,25 @@ In the future it will provide out of the box support for couple of databases as 
 **Web 3.0 example**
 ![image](./docs/images/block_node_web30.png)
 
-## Configuration
+## Examples
 
-In root directory you can find `config.example.yml` file which includes available options to configure.
+In our other repository [https://github.com/block-api/block-node-example](https://github.com/block-api/block-node-example) you can find example implementation with exposed HTTP endpoints.
 
 ## TBD
 
 This section presents features to be discussed if they should be implemented in the future:
 
-Communication:
+**Communication:**
 
-- TCP
-- NATS
-- WebSockets
-- HTTP (eg. for REST API)
+- `TCP`
+- `WebSockets`
+- `HTTP` (eg. for REST API)
 
-Security:
+**Security:**
 
-- Generation of ETH wallet for node, pub/priv keys, for identification and to sign `TransportPocket`
+- Generation of ETH wallet for node, pub/priv keys, for identification and to sign&verify data which are being sent over the network
 
-Others:
+**Others:**
 
 - Command like upload files to node - ak'a file storage
   - compressing files before sending to node
