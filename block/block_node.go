@@ -1,7 +1,6 @@
 package block
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -85,8 +84,7 @@ func (bn *BlockNode) Start() error {
 		Blocks: bn.Blocks(),
 	}
 
-	pocket := transporter.NewPocket(transporter.ChanDiscovery, bn.nodeVersionName, bn.nodeID, nil, nil, payload)
-	bn.Send(pocket)
+	bn.sendDiscovery(&payload)
 
 	go bn.daemon(bn.daemonChan)
 
@@ -130,8 +128,7 @@ func (bn *BlockNode) Stop() error {
 		Event: transporter.EventDisconnected,
 	}
 
-	discoveryDisconnect := transporter.NewPocket(transporter.ChanDiscovery, bn.nodeVersionName, bn.nodeID, nil, nil, payload)
-	bn.Send(discoveryDisconnect)
+	bn.sendDiscovery(&payload)
 
 	bn.daemonChan <- 1
 
@@ -163,22 +160,9 @@ func (bn *BlockNode) Database() *db.Database {
 	return &bn.database
 }
 
-// func (bn *BlockNode) Network() *network.Network {
-// 	return &bn.network
-// }
-
 func (bn *BlockNode) loadDatabase() {
 	bn.database = db.NewDatabase(&bn.config.Database)
 }
-
-// func (bn *BlockNode) loadNetwork() {
-// 	bn.network = network.NewNetwork(bn.nodeID, bn.transporter, &bn.trafficManager, &bn.database)
-// 	err := bn.network.Start()
-
-// 	if err != nil {
-// 		log.Panic(err.Error())
-// 	}
-// }
 
 func (bn *BlockNode) daemon(daemonChan chan uint) {
 	log.Debug("BlockNode daemon start")
@@ -194,8 +178,7 @@ L:
 				Blocks: bn.Blocks(),
 			}
 
-			pocket := transporter.NewPocket(transporter.ChanDiscovery, bn.nodeVersionName, bn.nodeID, nil, nil, payload)
-			bn.Send(pocket)
+			bn.sendDiscovery(&payload)
 
 			for nodeID, lastSeen := range bn.trafficManager.Nodes() {
 				if nodeID == bn.nodeID {
@@ -214,43 +197,6 @@ L:
 	}
 
 	log.Debug("BlockNode daemon quit")
-}
-
-func (bn *BlockNode) Send(pocket transporter.Pocket[[]byte]) error {
-	var err error
-
-	if pocket.Channel == transporter.ChanMessage && pocket.TargetAction != nil {
-		err = pocket.TargetAction.Validate()
-		if err != nil {
-			return err
-		}
-
-		if pocket.TargetAction.Name == types.NodeName(bn.options.Name) && pocket.TargetAction.Version == bn.options.Version && bn.blocks[pocket.TargetAction.Block] != nil {
-			actions := bn.blocks[pocket.TargetAction.Block].Actions()
-
-			if actions[pocket.TargetAction.Action] != nil {
-				actions[pocket.TargetAction.Action](pocket.Payload)
-				return nil
-			}
-
-		}
-
-		return errors.ErrInvalidTargetAction
-	}
-
-	pocketBytes, err := json.Marshal(pocket)
-	if err != nil {
-		log.Warning(err.Error())
-		return err
-	}
-
-	err = bn.transporter.Send(pocket.Channel, pocketBytes)
-	if err != nil {
-		log.Warning(err.Error())
-		return err
-	}
-
-	return nil
 }
 
 func (bn *BlockNode) Receive(payload []byte) {
