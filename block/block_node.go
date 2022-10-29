@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/block-api/block-node/common/types"
@@ -31,6 +32,7 @@ type BlockNode struct {
 	daemonChan        chan uint
 	heartbeatInterval int
 	sentHashes        map[string]time.Time
+	sentHashesMutex   *sync.Mutex
 }
 
 type BlockNodeOptions struct {
@@ -263,6 +265,7 @@ func NewBlockNode(options *BlockNodeOptions) BlockNode {
 		daemonChan:        make(chan uint),
 		heartbeatInterval: heartbeatInterval,
 		sentHashes:        make(map[string]time.Time),
+		sentHashesMutex:   new(sync.Mutex),
 	}
 
 	instantiated = true

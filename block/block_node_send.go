@@ -31,7 +31,9 @@ func (bn *BlockNode) Send(payload *transporter.PayloadMessage, targetAction *typ
 			actions := bn.blocks[pocket.TargetAction.Block].Actions()
 
 			if actions[pocket.TargetAction.Action] != nil {
+				bn.sentHashesMutex.Lock()
 				bn.sentHashes[pocket.Hash] = time.Now()
+				bn.sentHashesMutex.Unlock()
 
 				payload, err := DecodePayload[transporter.PayloadMessage](pocket.Payload)
 				if err != nil {
@@ -62,7 +64,9 @@ func (bn *BlockNode) Send(payload *transporter.PayloadMessage, targetAction *typ
 		return nil, err
 	}
 
+	bn.sentHashesMutex.Lock()
 	bn.sentHashes[pocket.Hash] = time.Now()
+	bn.sentHashesMutex.Unlock()
 
 	return nil, nil
 }
