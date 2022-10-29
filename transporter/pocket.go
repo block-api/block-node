@@ -3,6 +3,7 @@ package transporter
 import (
 	"bytes"
 	"encoding/json"
+	"time"
 
 	"github.com/block-api/block-node/common/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -21,6 +22,7 @@ type Pocket[P []byte | any] struct {
 // NewPocket creates new network pocket
 func NewPocket[P PayloadDiscovery | PayloadMessage](channel Channel, versionName types.NodeVersionName, fromID types.NodeID, targetID *types.NodeID, targetAction *types.TargetAction, payload P) Pocket[[]byte] {
 	var payloadBytes bytes.Buffer
+
 	pocket := Pocket[[]byte]{
 		Channel:      channel,
 		VersionName:  versionName,
@@ -30,7 +32,8 @@ func NewPocket[P PayloadDiscovery | PayloadMessage](channel Channel, versionName
 	}
 
 	json.NewEncoder(&payloadBytes).Encode(payload)
-	hash := crypto.Keccak256(payloadBytes.Bytes())
+
+	hash := crypto.Keccak256(payloadBytes.Bytes(), []byte(fromID), []byte(time.Now().String()))
 
 	pocket.Payload = payloadBytes.Bytes()
 	pocket.Hash = crypto.Keccak256Hash(hash).String()

@@ -2,6 +2,7 @@ package block
 
 import (
 	"github.com/block-api/block-node/common/types"
+	"github.com/block-api/block-node/transporter"
 )
 
 type IBlock interface {
@@ -11,7 +12,7 @@ type IBlock interface {
 	AddAction(name types.ActionName, action BlockAction)
 }
 
-type BlockAction func(payload []byte) (any, error)
+type BlockAction func(payload transporter.PayloadMessage) (*transporter.PayloadMessage, error)
 
 type Block struct {
 	IBlock

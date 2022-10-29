@@ -20,17 +20,17 @@ import (
 var instantiated bool
 
 type BlockNode struct {
-	nodeID          types.NodeID
-	nodeVersionName types.NodeVersionName
-	blocks          map[types.BlockName]IBlock
-	config          config.Config
-	options         BlockNodeOptions
-	transporter     transporter.Transporter
-	// network           network.Network
+	nodeID            types.NodeID
+	nodeVersionName   types.NodeVersionName
+	blocks            map[types.BlockName]IBlock
+	config            config.Config
+	options           BlockNodeOptions
+	transporter       transporter.Transporter
 	database          db.Database
 	trafficManager    traffic.Manager
 	daemonChan        chan uint
 	heartbeatInterval int
+	sentHashes        map[string]time.Time
 }
 
 type BlockNodeOptions struct {
@@ -262,6 +262,7 @@ func NewBlockNode(options *BlockNodeOptions) BlockNode {
 		trafficManager:    traffic.NewManager(nodeID),
 		daemonChan:        make(chan uint),
 		heartbeatInterval: heartbeatInterval,
+		sentHashes:        make(map[string]time.Time),
 	}
 
 	instantiated = true

@@ -20,6 +20,15 @@ func (pa *PayloadMessage) DataBytes(data any) ([]byte, error) {
 	return dataBytes.Bytes(), nil
 }
 
+func (pa *PayloadMessage) JSON() ([]byte, error) {
+	json, err := json.Marshal(pa)
+	if err != nil {
+		return make([]byte, 0), err
+	}
+
+	return json, nil
+}
+
 func NewPayloadMessage(data any) PayloadMessage {
 	return PayloadMessage{
 		Data: data,
