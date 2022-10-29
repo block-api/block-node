@@ -26,19 +26,18 @@ type SentHash struct {
 }
 
 type BlockNode struct {
-	nodeID               types.NodeID
-	nodeVersionName      types.NodeVersionName
-	blocks               map[types.BlockName]IBlock
-	config               config.Config
-	options              BlockNodeOptions
-	transporter          transporter.Transporter
-	database             db.Database
-	trafficManager       traffic.Manager
-	daemonChan           chan uint
-	heartbeatInterval    int
-	sentHashes           map[string]*SentHash
-	sentHashesMutex      *sync.Mutex
-	receiveResponseMutex *sync.Mutex
+	nodeID            types.NodeID
+	nodeVersionName   types.NodeVersionName
+	blocks            map[types.BlockName]IBlock
+	config            config.Config
+	options           BlockNodeOptions
+	transporter       transporter.Transporter
+	database          db.Database
+	trafficManager    traffic.Manager
+	daemonChan        chan uint
+	heartbeatInterval int
+	sentHashes        map[string]*SentHash
+	sentHashesMutex   *sync.Mutex
 }
 
 type BlockNodeOptions struct {
@@ -320,17 +319,16 @@ func NewBlockNode(options *BlockNodeOptions) BlockNode {
 	nodeVersionName := types.NodeVersionName("v" + strconv.Itoa(int(options.Version)) + "." + options.Name)
 
 	bn := BlockNode{
-		nodeID:               nodeID,
-		nodeVersionName:      nodeVersionName,
-		options:              *options,
-		blocks:               make(map[types.BlockName]IBlock),
-		transporter:          nil,
-		trafficManager:       traffic.NewManager(nodeID),
-		daemonChan:           make(chan uint),
-		heartbeatInterval:    heartbeatInterval,
-		sentHashes:           make(map[string]*SentHash),
-		sentHashesMutex:      new(sync.Mutex),
-		receiveResponseMutex: new(sync.Mutex),
+		nodeID:            nodeID,
+		nodeVersionName:   nodeVersionName,
+		options:           *options,
+		blocks:            make(map[types.BlockName]IBlock),
+		transporter:       nil,
+		trafficManager:    traffic.NewManager(nodeID),
+		daemonChan:        make(chan uint),
+		heartbeatInterval: heartbeatInterval,
+		sentHashes:        make(map[string]*SentHash),
+		sentHashesMutex:   new(sync.Mutex),
 	}
 
 	instantiated = true
