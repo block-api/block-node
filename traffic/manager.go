@@ -1,6 +1,7 @@
 package traffic
 
 import (
+	"strconv"
 	"sync"
 	"time"
 
@@ -37,6 +38,25 @@ func (m *Manager) Nodes() Nodes {
 
 func (m *Manager) Destinations() Destinations {
 	return m.destinations
+}
+
+func (m *Manager) DestinationExist(targetAction types.TargetAction) bool {
+	var s string = strconv.FormatUint(uint64(targetAction.Version), 10)
+	nodeVersionName := types.NodeVersionName("v" + s + "." + string(targetAction.Name))
+
+	if m.destinations[nodeVersionName] == nil {
+		return false
+	}
+
+	if m.destinations[nodeVersionName][targetAction.Block] == nil {
+		return false
+	}
+
+	if m.destinations[nodeVersionName][targetAction.Block][targetAction.Action] == nil {
+		return false
+	}
+
+	return true
 }
 
 // AddDestination adds information about topology of known nodes to manager

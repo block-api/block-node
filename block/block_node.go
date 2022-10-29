@@ -1,7 +1,7 @@
 package block
 
 import (
-	"fmt"
+	"encoding/json"
 	"os"
 	"strconv"
 	"sync"
@@ -20,19 +20,25 @@ import (
 
 var instantiated bool
 
+type SentHash struct {
+	time         time.Time
+	responseChan chan transporter.Pocket[[]byte]
+}
+
 type BlockNode struct {
-	nodeID            types.NodeID
-	nodeVersionName   types.NodeVersionName
-	blocks            map[types.BlockName]IBlock
-	config            config.Config
-	options           BlockNodeOptions
-	transporter       transporter.Transporter
-	database          db.Database
-	trafficManager    traffic.Manager
-	daemonChan        chan uint
-	heartbeatInterval int
-	sentHashes        map[string]time.Time
-	sentHashesMutex   *sync.Mutex
+	nodeID               types.NodeID
+	nodeVersionName      types.NodeVersionName
+	blocks               map[types.BlockName]IBlock
+	config               config.Config
+	options              BlockNodeOptions
+	transporter          transporter.Transporter
+	database             db.Database
+	trafficManager       traffic.Manager
+	daemonChan           chan uint
+	heartbeatInterval    int
+	sentHashes           map[string]*SentHash
+	sentHashesMutex      *sync.Mutex
+	receiveResponseMutex *sync.Mutex
 }
 
 type BlockNodeOptions struct {
@@ -73,6 +79,12 @@ func (bn *BlockNode) Start() error {
 	}
 
 	err = bn.transporter.Subscribe(transporter.ChanMessage, bn.Receive)
+	if err != nil {
+		log.Warning(err.Error())
+		return err
+	}
+
+	err = bn.transporter.Subscribe(transporter.ChanMessageResponse, bn.ReceiveResponse)
 	if err != nil {
 		log.Warning(err.Error())
 		return err
@@ -210,6 +222,10 @@ func (bn *BlockNode) Receive(payload []byte) {
 		return
 	}
 
+	if pocket.FromID == bn.nodeID {
+		return
+	}
+
 	if pocket.TargetID != nil && *pocket.TargetID != "" && *pocket.TargetID != bn.nodeID {
 		log.Debug("not a target, skipping")
 		return
@@ -240,8 +256,56 @@ func (bn *BlockNode) Receive(payload []byte) {
 	}
 
 	if pocket.Channel == transporter.ChanMessage {
-		fmt.Println(pocket)
+		if bn.trafficManager.DestinationExist(*pocket.TargetAction) {
+			messagePayload, err := DecodePayload[transporter.PayloadMessage](pocket.Payload)
+			if err != nil {
+				log.Warning(err.Error())
+				return
+			}
+
+			response, err := bn.Send(&messagePayload, pocket.TargetAction)
+			if err != nil {
+				log.Warning(err.Error())
+				return
+			}
+
+			responsePocket := transporter.NewPocket(transporter.ChanMessageResponse, bn.nodeVersionName, bn.nodeID, &pocket.FromID, nil, *response)
+			responsePocket.ResponseHash = pocket.Hash
+
+			responseJSON, err := json.Marshal(responsePocket)
+			if err != nil {
+				log.Warning(err.Error())
+				return
+			}
+
+			err = bn.transporter.Send(responsePocket.Channel, responseJSON)
+			if err != nil {
+				log.Warning(err.Error())
+				return
+			}
+		}
+		return
 	}
+}
+
+func (bn *BlockNode) ReceiveResponse(payload []byte) {
+	log.Debug("Network.ReceiveResponse []byte")
+
+	pocket, err := DecodePocket(payload)
+	if err != nil {
+		log.Warning(err.Error())
+		return
+	}
+
+	if pocket.FromID == bn.nodeID {
+		return
+	}
+
+	bn.sentHashesMutex.Lock()
+	if bn.sentHashes[pocket.ResponseHash] != nil {
+		bn.sentHashes[pocket.ResponseHash].responseChan <- pocket
+	}
+	bn.sentHashesMutex.Unlock()
 }
 
 var heartbeatInterval = 5
@@ -256,16 +320,17 @@ func NewBlockNode(options *BlockNodeOptions) BlockNode {
 	nodeVersionName := types.NodeVersionName("v" + strconv.Itoa(int(options.Version)) + "." + options.Name)
 
 	bn := BlockNode{
-		nodeID:            nodeID,
-		nodeVersionName:   nodeVersionName,
-		options:           *options,
-		blocks:            make(map[types.BlockName]IBlock),
-		transporter:       nil,
-		trafficManager:    traffic.NewManager(nodeID),
-		daemonChan:        make(chan uint),
-		heartbeatInterval: heartbeatInterval,
-		sentHashes:        make(map[string]time.Time),
-		sentHashesMutex:   new(sync.Mutex),
+		nodeID:               nodeID,
+		nodeVersionName:      nodeVersionName,
+		options:              *options,
+		blocks:               make(map[types.BlockName]IBlock),
+		transporter:          nil,
+		trafficManager:       traffic.NewManager(nodeID),
+		daemonChan:           make(chan uint),
+		heartbeatInterval:    heartbeatInterval,
+		sentHashes:           make(map[string]*SentHash),
+		sentHashesMutex:      new(sync.Mutex),
+		receiveResponseMutex: new(sync.Mutex),
 	}
 
 	instantiated = true

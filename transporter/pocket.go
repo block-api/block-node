@@ -17,6 +17,7 @@ type Pocket[P []byte | any] struct {
 	TargetAction *types.TargetAction   `json:"target_action"`
 	Payload      P                     `json:"payload"`
 	Hash         string                `json:"hash"`
+	ResponseHash string                `json:"hash_res"`
 }
 
 // NewPocket creates new network pocket

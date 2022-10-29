@@ -3,10 +3,11 @@ package transporter
 type Channel string
 
 const (
-	ChanPrefix    = "bn_"
-	ChanDiscovery = ChanPrefix + "discovery"
-	ChanMessage   = ChanPrefix + "msg"
-	ChanStorage   = ChanPrefix + "storage"
+	ChanPrefix                  = "bn_"
+	ChanDiscovery       Channel = ChanPrefix + "discovery"
+	ChanMessage         Channel = ChanPrefix + "msg"
+	ChanMessageResponse Channel = ChanPrefix + "msg_res"
+	ChanStorage         Channel = ChanPrefix + "storage"
 )
 
 type Transporter interface {
