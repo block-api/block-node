@@ -2,6 +2,7 @@ package block
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"strconv"
 	"sync"
@@ -26,18 +27,17 @@ type SentHash struct {
 }
 
 type BlockNode struct {
-	nodeID            types.NodeID
-	nodeVersionName   types.NodeVersionName
-	blocks            map[types.BlockName]IBlock
-	config            config.Config
-	options           BlockNodeOptions
-	transporter       transporter.Transporter
-	database          db.Database
-	trafficManager    traffic.Manager
-	daemonChan        chan uint
-	heartbeatInterval int
-	sentHashes        map[string]*SentHash
-	sentHashesMutex   *sync.Mutex
+	nodeID          types.NodeID
+	nodeVersionName types.NodeVersionName
+	blocks          map[types.BlockName]IBlock
+	config          config.Config
+	options         BlockNodeOptions
+	transporter     transporter.Transporter
+	database        db.Database
+	trafficManager  traffic.Manager
+	daemonChan      chan uint
+	sentHashes      map[string]*SentHash
+	sentHashesMutex *sync.Mutex
 }
 
 type BlockNodeOptions struct {
@@ -69,6 +69,18 @@ func (bn *BlockNode) Start() error {
 		panic(err)
 	}
 
+	fmt.Println(bn.config.Transporter.Timeout)
+	fmt.Println(bn.config.Transporter.HeartbeatInterval)
+	if bn.config.Transporter.Timeout < 1 {
+		bn.config.Transporter.Timeout = 30
+	}
+
+	if bn.config.Transporter.HeartbeatInterval < 1 {
+		bn.config.Transporter.HeartbeatInterval = 5
+	}
+
+	fmt.Println(bn.config.Transporter.Timeout)
+	fmt.Println(bn.config.Transporter.HeartbeatInterval)
 	bn.loadDatabase()
 
 	err = bn.transporter.Subscribe(transporter.ChanDiscovery, bn.Receive)
@@ -180,7 +192,7 @@ func (bn *BlockNode) loadDatabase() {
 func (bn *BlockNode) daemon(daemonChan chan uint) {
 	log.Debug("BlockNode daemon start")
 
-	ticker := time.NewTicker(time.Duration(bn.heartbeatInterval) * time.Second)
+	ticker := time.NewTicker(time.Duration(bn.config.Transporter.HeartbeatInterval) * time.Second)
 L:
 	for {
 		select {
@@ -199,7 +211,7 @@ L:
 				}
 
 				dateDiff := time.Since(lastSeen).Seconds()
-				if dateDiff > float64(bn.heartbeatInterval+1) {
+				if dateDiff > float64(bn.config.Transporter.HeartbeatInterval+1) {
 					bn.trafficManager.RemoveNodeID(nodeID)
 				}
 			}
@@ -319,16 +331,15 @@ func NewBlockNode(options *BlockNodeOptions) BlockNode {
 	nodeVersionName := types.NodeVersionName("v" + strconv.Itoa(int(options.Version)) + "." + options.Name)
 
 	bn := BlockNode{
-		nodeID:            nodeID,
-		nodeVersionName:   nodeVersionName,
-		options:           *options,
-		blocks:            make(map[types.BlockName]IBlock),
-		transporter:       nil,
-		trafficManager:    traffic.NewManager(nodeID),
-		daemonChan:        make(chan uint),
-		heartbeatInterval: heartbeatInterval,
-		sentHashes:        make(map[string]*SentHash),
-		sentHashesMutex:   new(sync.Mutex),
+		nodeID:          nodeID,
+		nodeVersionName: nodeVersionName,
+		options:         *options,
+		blocks:          make(map[types.BlockName]IBlock),
+		transporter:     nil,
+		trafficManager:  traffic.NewManager(nodeID),
+		daemonChan:      make(chan uint),
+		sentHashes:      make(map[string]*SentHash),
+		sentHashesMutex: new(sync.Mutex),
 	}
 
 	instantiated = true
