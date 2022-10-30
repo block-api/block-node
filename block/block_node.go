@@ -2,7 +2,6 @@ package block
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"strconv"
 	"sync"
@@ -69,8 +68,6 @@ func (bn *BlockNode) Start() error {
 		panic(err)
 	}
 
-	fmt.Println(bn.config.Transporter.Timeout)
-	fmt.Println(bn.config.Transporter.HeartbeatInterval)
 	if bn.config.Transporter.Timeout < 1 {
 		bn.config.Transporter.Timeout = 30
 	}
@@ -79,8 +76,6 @@ func (bn *BlockNode) Start() error {
 		bn.config.Transporter.HeartbeatInterval = 5
 	}
 
-	fmt.Println(bn.config.Transporter.Timeout)
-	fmt.Println(bn.config.Transporter.HeartbeatInterval)
 	bn.loadDatabase()
 
 	err = bn.transporter.Subscribe(transporter.ChanDiscovery, bn.Receive)
@@ -318,8 +313,6 @@ func (bn *BlockNode) ReceiveResponse(payload []byte) {
 	}
 	bn.sentHashesMutex.Unlock()
 }
-
-var heartbeatInterval = 5
 
 // NewBlockNode creates new BlockNode struct
 func NewBlockNode(options *BlockNodeOptions) BlockNode {
