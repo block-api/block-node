@@ -21,7 +21,7 @@ func (bn *BlockNode) ProcessPocketDiscovery(pocket transporter.Pocket[transporte
 		var knownNode bool = false
 		knownNodes := bn.trafficManager.Nodes()
 
-		for nodeID, _ := range knownNodes {
+		for nodeID := range knownNodes {
 			if pocket.FromID == nodeID {
 				knownNode = true
 				bn.trafficManager.UpdateLastSeen(nodeID)

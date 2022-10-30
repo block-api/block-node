@@ -55,16 +55,16 @@ func (bn *BlockNode) Start() error {
 	}
 
 	configDir := os.Getenv("CONFIG_DIR")
-	config := config.NewConfig()
-	err = config.LoadFromFile(configDir + "/config.yml")
+	configFile := config.NewConfig()
+	err = configFile.LoadFromFile(configDir + "/config.yml")
 
 	if err != nil {
 		panic(err)
 	}
 
-	bn.config = config
+	bn.config = configFile
 
-	err = bn.loadTransporter(config.Transporter)
+	err = bn.loadTransporter(bn.config.Transporter)
 	if err != nil {
 		panic(err)
 	}
@@ -122,11 +122,11 @@ func (bn *BlockNode) AddBlock(blocks ...IBlock) error {
 	return nil
 }
 
-func (bn BlockNode) Blocks() map[types.BlockName][]types.ActionName {
+func (bn *BlockNode) Blocks() map[types.BlockName][]types.ActionName {
 	var blocks map[types.BlockName][]types.ActionName = make(map[types.BlockName][]types.ActionName)
 
-	for name, blck := range bn.blocks {
-		actions := blck.Actions()
+	for name, blk := range bn.blocks {
+		actions := blk.Actions()
 
 		for actionName := range actions {
 			blocks[name] = append(blocks[name], actionName)
