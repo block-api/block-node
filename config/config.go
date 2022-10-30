@@ -14,9 +14,9 @@ type ApplicationConfig interface {
 // Config file definition
 type Config struct {
 	ApplicationConfig `yaml:"-"`
-	Debug             bool           `yaml:"debug"`
-	Transporter       Transporter    `yaml:"transporter"`
-	Database          ConfigDatabase `yaml:"database"`
+	Debug             bool        `yaml:"debug"`
+	Transporter       Transporter `yaml:"transporter"`
+	Database          Database    `yaml:"database"`
 }
 
 // Transporter configuration options
@@ -35,16 +35,19 @@ type RedisTransporter struct {
 	Db       uint   `yaml:"db"`
 }
 
-type ConfigDatabase struct {
-	LevelDB map[string]ConfigLevelDB `yaml:"leveldb"`
-	CouchDB ConfigDatabaseCouchDB    `yaml:"couch_db"`
+// Database config options
+type Database struct {
+	LevelDB map[string]DatabaseLevelDB `yaml:"leveldb"`
+	CouchDB DatabaseCouchDB            `yaml:"couch_db"`
 }
 
-type ConfigLevelDB struct {
+// DatabaseLevelDB leveldb config options
+type DatabaseLevelDB struct {
 	DbPath string `yaml:"path"`
 }
 
-type ConfigDatabaseCouchDB struct {
+// DatabaseCouchDB couchDB config options
+type DatabaseCouchDB struct {
 	Host     string `yaml:"host"`
 	Port     string `yaml:"port"`
 	Username string `yaml:"username"`
