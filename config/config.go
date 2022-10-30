@@ -5,27 +5,29 @@ import (
 	"github.com/block-api/block-node/log"
 )
 
+// ApplicationConfig interface
 type ApplicationConfig interface {
 	LoadFromFile(filePath string) error
 	GetConfig() *Config
 }
 
+// Config file definition
 type Config struct {
 	ApplicationConfig `yaml:"-"`
-	Debug             bool              `yaml:"debug"`
-	Transporter       ConfigTransporter `yaml:"transporter"`
-	Database          ConfigDatabase    `yaml:"database"`
-	/// ---
-	RPC ConfigRPC `yaml:"rpc"`
+	Debug             bool           `yaml:"debug"`
+	Transporter       Transporter    `yaml:"transporter"`
+	Database          ConfigDatabase `yaml:"database"`
 }
 
-// -- Transporters -- //
-//
-type ConfigTransporter struct {
-	Redis *ConfigRedisTransporter `yaml:"redis"`
+// Transporter configuration options
+type Transporter struct {
+	Timeout           uint              `yaml:"timeout"`
+	HeartbeatInterval uint              `yaml:"heartbeatInterval"`
+	Redis             *RedisTransporter `yaml:"redis"`
 }
 
-type ConfigRedisTransporter struct {
+// RedisTransporter config options
+type RedisTransporter struct {
 	Host     string `yaml:"host"`
 	Port     string `yaml:"port"`
 	Username string `yaml:"username"`
@@ -33,7 +35,6 @@ type ConfigRedisTransporter struct {
 	Db       uint   `yaml:"db"`
 }
 
-/// -----
 type ConfigDatabase struct {
 	LevelDB map[string]ConfigLevelDB `yaml:"leveldb"`
 	CouchDB ConfigDatabaseCouchDB    `yaml:"couch_db"`
@@ -51,16 +52,12 @@ type ConfigDatabaseCouchDB struct {
 	Prefix   string `yaml:"prefix"`
 }
 
-type ConfigRPC struct {
-	Active   bool   `yaml:"active"`
-	BindHost string `yaml:"bind_host"`
-	BindPort string `yaml:"bind_port"`
-}
-
+// NewConfig creates new empty Config struct
 func NewConfig() Config {
 	return Config{}
 }
 
+// GetConfig returns Config struct options
 func (c *Config) GetConfig() *Config {
 	return c
 }

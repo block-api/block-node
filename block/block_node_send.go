@@ -58,7 +58,6 @@ func (bn *BlockNode) Send(payload *transporter.PayloadMessage, targetAction *typ
 
 			// TODO: get random destination id from TrafficManager
 			// in the future other options eg. lowest CPU usage
-
 			err = bn.transporter.Send(pocket.Channel, pocketBytes)
 			if err != nil {
 				log.Warning(err.Error())
@@ -68,11 +67,10 @@ func (bn *BlockNode) Send(payload *transporter.PayloadMessage, targetAction *typ
 			bn.sentHashesMutex.Lock()
 			bn.sentHashes[pocket.Hash] = &SentHash{time: time.Now(), responseChan: make(chan transporter.Pocket[[]byte])}
 
-			// wait for X (timeout) seconds for response
 			var responsePayloadChan chan *transporter.PayloadMessage = make(chan *transporter.PayloadMessage)
 
-			go func(responseChan chan *transporter.PayloadMessage, receivedResponsePocket chan transporter.Pocket[[]byte]) {
-				timer := time.NewTimer(15 * time.Second)
+			go func(timeout uint, responseChan chan *transporter.PayloadMessage, receivedResponsePocket chan transporter.Pocket[[]byte]) {
+				timer := time.NewTimer(time.Duration(timeout) * time.Second)
 			L:
 				for {
 					select {
@@ -84,11 +82,12 @@ func (bn *BlockNode) Send(payload *transporter.PayloadMessage, targetAction *typ
 
 						responseChan <- &receivedPayload
 					case <-timer.C:
+						// timed out
 						responseChan <- &transporter.PayloadMessage{}
 						break L
 					}
 				}
-			}(responsePayloadChan, bn.sentHashes[pocket.Hash].responseChan)
+			}(bn.config.Transporter.Timeout, responsePayloadChan, bn.sentHashes[pocket.Hash].responseChan)
 			bn.sentHashesMutex.Unlock()
 
 			receivedPayload := <-responsePayloadChan
