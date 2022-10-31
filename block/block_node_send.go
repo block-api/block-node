@@ -50,14 +50,19 @@ func (bn *BlockNode) Send(payload *transporter.PayloadMessage, targetAction *typ
 		}
 
 		if bn.trafficManager.DestinationExist(*pocket.TargetAction) {
+			targetNodeID, err := bn.trafficManager.GetDeliveryTargetNodeID(bn.config.Transporter.DeliveryMethod, *pocket.TargetAction)
+			if err != nil {
+				return nil, err
+			}
+
+			pocket.TargetID = targetNodeID
+			
 			pocketBytes, err := json.Marshal(pocket)
 			if err != nil {
 				log.Warning(err.Error())
 				return nil, err
 			}
 
-			// TODO: get random destination id from TrafficManager
-			// in the future other options eg. lowest CPU usage
 			err = bn.transporter.Send(pocket.Channel, pocketBytes)
 			if err != nil {
 				log.Warning(err.Error())
