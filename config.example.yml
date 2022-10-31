@@ -3,6 +3,7 @@ type: "node" # node / storage
 transporter:
   timeout: 30 # default timeout for actions, in seconds
   heartbeatInterval: 5 # in seconds
+  deliveryMethod: random
   redis:
     host: localhost
     port: 6379

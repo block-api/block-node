@@ -1,6 +1,8 @@
 package traffic
 
 import (
+	"github.com/block-api/block-node/transporter"
+	"math/rand"
 	"strconv"
 	"sync"
 	"time"
@@ -36,10 +38,12 @@ func (m *Manager) Nodes() Nodes {
 	return m.nodes
 }
 
+// Destinations returns network topology
 func (m *Manager) Destinations() Destinations {
 	return m.destinations
 }
 
+// DestinationExist return true if target action is found in the network
 func (m *Manager) DestinationExist(targetAction types.TargetAction) bool {
 	var s string = strconv.FormatUint(uint64(targetAction.Version), 10)
 	nodeVersionName := types.NodeVersionName("v" + s + "." + string(targetAction.Name))
@@ -57,6 +61,25 @@ func (m *Manager) DestinationExist(targetAction types.TargetAction) bool {
 	}
 
 	return true
+}
+
+// GetDeliveryTargetNodeID return NodeID for target action based on set deliveryMethod in config file
+func (m *Manager) GetDeliveryTargetNodeID(deliveryMethod types.DeliveryMethod, targetAction types.TargetAction) (*types.NodeID, error) {
+	var s string = strconv.FormatUint(uint64(targetAction.Version), 10)
+	nodeVersionName := types.NodeVersionName("v" + s + "." + string(targetAction.Name))
+
+	if deliveryMethod == transporter.RandomDelivery {
+		availableNodes := m.destinations[nodeVersionName][targetAction.Block][targetAction.Action]
+		if len(availableNodes) < 1 {
+			return nil, ErrNoNodeFound
+		}
+
+		rand.Seed(time.Now().Unix())
+
+		return &availableNodes[rand.Intn(len(availableNodes))], nil
+	}
+
+	return nil, transporter.ErrInvalidDeliveryMethod
 }
 
 // AddDestination adds information about topology of known nodes to manager
