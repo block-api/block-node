@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/block-api/block-node/common"
+	"github.com/block-api/block-node/common/types"
 	"github.com/block-api/block-node/log"
 )
 
@@ -21,9 +22,10 @@ type Config struct {
 
 // Transporter configuration options
 type Transporter struct {
-	Timeout           uint              `yaml:"timeout"`
-	HeartbeatInterval uint              `yaml:"heartbeatInterval"`
-	Redis             *RedisTransporter `yaml:"redis"`
+	Timeout           uint                 `yaml:"timeout"`
+	HeartbeatInterval uint                 `yaml:"heartbeatInterval"`
+	DeliveryMethod    types.DeliveryMethod `yaml:"deliveryMethod"`
+	Redis             *RedisTransporter    `yaml:"redis"`
 }
 
 // RedisTransporter config options

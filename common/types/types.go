@@ -8,6 +8,7 @@ type (
 	NodeVersionName string
 	BlockName       string
 	ActionName      string
+	DeliveryMethod  string
 )
 
 type TargetAction struct {

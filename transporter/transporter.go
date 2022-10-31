@@ -1,5 +1,7 @@
 package transporter
 
+import "github.com/block-api/block-node/common/types"
+
 type Channel string
 
 const (
@@ -8,6 +10,10 @@ const (
 	ChanMessage         Channel = ChanPrefix + "msg"
 	ChanMessageResponse Channel = ChanPrefix + "msg_res"
 	ChanStorage         Channel = ChanPrefix + "storage"
+)
+
+const (
+	RandomDelivery types.DeliveryMethod = "random"
 )
 
 type Transporter interface {

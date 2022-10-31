@@ -18,5 +18,5 @@ func (bn *BlockNode) loadTransporter(transporterConfig config.Transporter) error
 		return nil
 	}
 
-	return errors.New(errors.ErrTransporterNotConfigured)
+	return errors.ErrTransporterNotConfigured
 }
