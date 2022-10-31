@@ -13,9 +13,6 @@ import (
 type Type string
 
 const (
-	ErrInvalidType = "invalid file type"
-)
-const (
 	JSON Type = "JSON"
 	YML  Type = "YML"
 )
@@ -71,7 +68,7 @@ func (f *File) Parse(out interface{}) error {
 		return nil
 	}
 
-	return errors.New(ErrInvalidType)
+	return errors.ErrInvalidFileType
 }
 
 func (f *File) parseJSON(out interface{}) error {
@@ -86,7 +83,7 @@ func (f *File) parseJSON(out interface{}) error {
 func (f *File) parseYML(out interface{}) error {
 	err := yaml.Unmarshal(f.content, out)
 	if err != nil {
-		return errors.New(err.Error())
+		return err
 	}
 
 	return nil
