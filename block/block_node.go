@@ -48,18 +48,25 @@ type BlockNodeOptions struct {
 func (bn *BlockNode) Start() error {
 	log.Debug("starting " + bn.options.Name + ", id: " + string(bn.nodeID))
 
-	err := godotenv.Load()
+	_ = godotenv.Load()
+
+	configDir := os.Getenv("CONFIG_DIR")
+	if configDir == "" {
+		panic(errors.ErrConfigDirMissing)
+	}
+
+	configFile := config.NewConfig()
+	err := configFile.LoadFromFile(configDir + "/config.yml")
 	if err != nil {
 		panic(err)
 	}
 
-	configDir := os.Getenv("CONFIG_DIR")
-
-	configFile := config.NewConfig()
-	err = configFile.LoadFromFile(configDir + "/config.yml")
-
-	if err != nil {
-		panic(err)
+	if os.Getenv("DEBUG") == "" {
+		if configFile.Debug {
+			_ = os.Setenv("DEBUG", "true")
+		} else {
+			_ = os.Setenv("DEBUG", "false")
+		}
 	}
 
 	bn.config = configFile
@@ -117,7 +124,7 @@ func (bn *BlockNode) AddBlock(blocks ...IBlock) error {
 
 	for _, b := range blocks {
 		if bn.blocks[b.GetName()] != bk {
-			return errors.New(errors.ErrBlockAdded)
+			return errors.ErrBlockAdded
 		}
 
 		bn.blocks[b.GetName()] = b
