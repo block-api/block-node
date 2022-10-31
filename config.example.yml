@@ -1,7 +1,7 @@
 debug: true
 type: "node" # node / storage
-transport:
-  timeout: 30 # in seconds
+transporter:
+  timeout: 30 # default timeout for actions, in seconds
   heartbeatInterval: 5 # in seconds
   redis:
     host: localhost
@@ -14,8 +14,6 @@ transport:
   tcp:
 database:
   leveldb:
-    main:
-      dbPath: /var/block-node/data/main.db
     # required database
     discovery:
       dbPath: /var/block-node/data/discovery.db

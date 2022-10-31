@@ -81,7 +81,7 @@ func (r *Redis) Subscribe(channel Channel, callback func(payload []byte)) error 
 	return nil
 }
 
-func NewRedis(nodeID types.NodeID, configRedis *config.ConfigRedisTransporter) (*Redis, error) {
+func NewRedis(nodeID types.NodeID, configRedis *config.RedisTransporter) (*Redis, error) {
 	redisOptions := &redis.Options{
 		Addr:     configRedis.Host + ":" + configRedis.Port,
 		Username: configRedis.Username,

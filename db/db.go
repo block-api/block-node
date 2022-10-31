@@ -6,17 +6,13 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
-const (
-	DbDiscovery = "discovery"
-)
-
 type Database struct {
-	config  *config.ConfigDatabase
+	config  *config.Database
 	leveldb map[string]*leveldb.DB
 }
 
 // NewDatabase creates new database struct
-func NewDatabase(config *config.ConfigDatabase) Database {
+func NewDatabase(config *config.Database) Database {
 	newDb := Database{
 		config:  config,
 		leveldb: make(map[string]*leveldb.DB),
