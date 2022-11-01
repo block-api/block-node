@@ -10,19 +10,12 @@ transporter:
     username:
     password:
     db: 0
-  nats:
-  p2p:
-  tcp:
 database:
   leveldb:
     # required database
     discovery:
       dbPath: /var/block-node/data/discovery.db
-  couch_db:
-    host: 127.0.0.1
-    port: 5984
-    username: admin
-    password: admin
-    prefix: "bn_"
-storage:
-  type: ""
+  sqlite:
+    # uncomment to use
+#    default:
+#      dsn: "file:/var/block-node/data/sqlite/default.db?cache=shared&mode=rw"
