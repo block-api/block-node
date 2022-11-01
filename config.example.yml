@@ -18,4 +18,6 @@ database:
   sqlite:
     # uncomment to use
 #    default:
-#      dsn: "file:/var/block-node/data/sqlite/default.db?cache=shared&mode=rw"
+#      path: "/var/block-node/data/default.sqlite"
+#      options: "cache=shared&mode=rw"
+#      maxOpenConnections: 0
