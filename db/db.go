@@ -12,7 +12,7 @@ import (
 type Database struct {
 	config  *config.Database
 	leveldb map[string]*leveldb.DB
-	sqlite  map[string]SQLite
+	sqlite  map[string]*SQLite
 }
 
 // NewDatabase creates new database struct
@@ -20,7 +20,7 @@ func NewDatabase(config *config.Database) Database {
 	newDb := Database{
 		config:  config,
 		leveldb: make(map[string]*leveldb.DB),
-		sqlite:  make(map[string]SQLite),
+		sqlite:  make(map[string]*SQLite),
 	}
 
 	var err error
@@ -42,27 +42,31 @@ func NewDatabase(config *config.Database) Database {
 			if _, err := os.Stat(dbConfig.DbPath); err != nil {
 				file, err := os.Create(dbConfig.DbPath)
 				if err != nil {
-					panic(err)
+					log.Panic(err.Error())
 				}
 				_ = file.Close()
 			}
 
 			s3db, err := sql.Open("sqlite3", "file:"+dbConfig.DbPath+"?"+dbConfig.Options)
 			if err != nil {
-				panic(err)
+				log.Panic(err.Error())
 			}
 
 			err = s3db.Ping()
 			if err != nil {
-				panic(err)
+				log.Panic(err.Error())
 			}
 
-			newDb.sqlite[dbName] = SQLite{
+			newDb.sqlite[dbName] = &SQLite{
 				Db: s3db,
 			}
 
 			if dbConfig.MaxOpenConnections > 0 {
 				newDb.sqlite[dbName].Db.SetMaxOpenConns(dbConfig.MaxOpenConnections)
+			}
+
+			if _, err := newDb.sqlite[dbName].Db.Exec(CreateMigrationTable); err != nil {
+				log.Panic(err.Error())
 			}
 
 			log.Debug("database " + dbName + ": " + dbConfig.DbPath)
@@ -72,18 +76,21 @@ func NewDatabase(config *config.Database) Database {
 	return newDb
 }
 
-func (db *Database) GetLevelDB(name string) *leveldb.DB {
-	if db.leveldb[name] != nil {
-		return db.leveldb[name]
+func (db *Database) RunMigrations() error {
+	for _, dbSQLite := range db.sqlite {
+		err := dbSQLite.RunMigrations()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (db *Database) GetSQLite(name string) *sql.DB {
-	if db.sqlite[name].Db != nil {
-		return db.sqlite[name].Db
-	}
+func (db *Database) GetLevelDB(name string) *leveldb.DB {
+	return db.leveldb[name]
+}
 
-	return nil
+func (db *Database) GetSQLite(name string) *SQLite {
+	return db.sqlite[name]
 }
