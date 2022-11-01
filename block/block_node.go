@@ -2,8 +2,8 @@ package block
 
 import (
 	"encoding/json"
+	"github.com/block-api/block-node/common"
 	"os"
-	"strconv"
 	"sync"
 	"time"
 
@@ -14,7 +14,6 @@ import (
 	"github.com/block-api/block-node/log"
 	"github.com/block-api/block-node/traffic"
 	"github.com/block-api/block-node/transporter"
-	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 )
 
@@ -327,16 +326,15 @@ func NewBlockNode(options *BlockNodeOptions) BlockNode {
 		panic(errors.ErrBlockNodeInstantiated)
 	}
 
-	nodeID := types.NodeID("v" + strconv.Itoa(int(options.Version)) + "." + options.Name + "." + uuid.NewString())
-	nodeVersionName := types.NodeVersionName("v" + strconv.Itoa(int(options.Version)) + "." + options.Name)
+	nodeID := common.CreateNodeID(options.Version, options.Name)
 
 	bn := BlockNode{
 		nodeID:          nodeID,
-		nodeVersionName: nodeVersionName,
+		nodeVersionName: common.CreateNodeVersionName(options.Version, options.Name),
 		options:         *options,
 		blocks:          make(map[types.BlockName]IBlock),
 		transporter:     nil,
-		trafficManager:  traffic.NewManager(nodeID),
+		trafficManager:  traffic.NewManager(&nodeID),
 		daemonChan:      make(chan uint),
 		sentHashes:      make(map[string]*SentHash),
 		sentHashesMutex: new(sync.Mutex),
