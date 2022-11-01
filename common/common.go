@@ -1,5 +1,11 @@
 package common
 
+import (
+	"github.com/block-api/block-node/common/types"
+	"github.com/google/uuid"
+	"strconv"
+)
+
 const (
 	CmdExit Cmd = iota
 	CmdStop
@@ -23,4 +29,12 @@ func RemoveFromSlice(slice []interface{}, index int) []interface{} {
 	}
 
 	return slice[:sliceLastIndex]
+}
+
+func CreateNodeID(version uint, name string) types.NodeID {
+	return types.NodeID("v" + strconv.Itoa(int(version)) + "." + name + "." + uuid.NewString())
+}
+
+func CreateNodeVersionName(version uint, name string) types.NodeVersionName {
+	return types.NodeVersionName("v" + strconv.Itoa(int(version)) + "." + name)
 }

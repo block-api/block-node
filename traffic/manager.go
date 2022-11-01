@@ -1,9 +1,9 @@
 package traffic
 
 import (
+	"github.com/block-api/block-node/common"
 	"github.com/block-api/block-node/transporter"
 	"math/rand"
-	"strconv"
 	"sync"
 	"time"
 
@@ -22,9 +22,9 @@ type Manager struct {
 }
 
 // NewManager creates new Manager struct
-func NewManager(nodeID types.NodeID) Manager {
+func NewManager(nodeID *types.NodeID) Manager {
 	manager := Manager{
-		nodeID:            nodeID,
+		nodeID:            *nodeID,
 		destinationsMutex: new(sync.Mutex),
 		destinations:      make(map[types.NodeVersionName]map[types.BlockName]map[types.ActionName][]types.NodeID),
 		nodes:             make(Nodes),
@@ -45,18 +45,9 @@ func (m *Manager) Destinations() Destinations {
 
 // DestinationExist return true if target action is found in the network
 func (m *Manager) DestinationExist(targetAction types.TargetAction) bool {
-	var s string = strconv.FormatUint(uint64(targetAction.Version), 10)
-	nodeVersionName := types.NodeVersionName("v" + s + "." + string(targetAction.Name))
+	nodeVersionName := common.CreateNodeVersionName(targetAction.Version, string(targetAction.Name))
 
-	if m.destinations[nodeVersionName] == nil {
-		return false
-	}
-
-	if m.destinations[nodeVersionName][targetAction.Block] == nil {
-		return false
-	}
-
-	if m.destinations[nodeVersionName][targetAction.Block][targetAction.Action] == nil {
+	if m.destinations[nodeVersionName] == nil && m.destinations[nodeVersionName][targetAction.Block] == nil && m.destinations[nodeVersionName][targetAction.Block][targetAction.Action] == nil {
 		return false
 	}
 
@@ -65,8 +56,7 @@ func (m *Manager) DestinationExist(targetAction types.TargetAction) bool {
 
 // GetDeliveryTargetNodeID return NodeID for target action based on set deliveryMethod in config file
 func (m *Manager) GetDeliveryTargetNodeID(deliveryMethod types.DeliveryMethod, targetAction types.TargetAction) (*types.NodeID, error) {
-	var s string = strconv.FormatUint(uint64(targetAction.Version), 10)
-	nodeVersionName := types.NodeVersionName("v" + s + "." + string(targetAction.Name))
+	nodeVersionName := common.CreateNodeVersionName(targetAction.Version, string(targetAction.Name))
 
 	if deliveryMethod == transporter.RandomDelivery {
 		availableNodes := m.destinations[nodeVersionName][targetAction.Block][targetAction.Action]
