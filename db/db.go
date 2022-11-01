@@ -79,3 +79,11 @@ func (db *Database) GetLevelDB(name string) *leveldb.DB {
 
 	return nil
 }
+
+func (db *Database) GetSQLite(name string) *sql.DB {
+	if db.sqlite[name].Db != nil {
+		return db.sqlite[name].Db
+	}
+
+	return nil
+}
