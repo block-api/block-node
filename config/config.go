@@ -40,12 +40,20 @@ type RedisTransporter struct {
 // Database config options
 type Database struct {
 	LevelDB map[string]DatabaseLevelDB `yaml:"leveldb"`
+	SQLite  map[string]DatabaseSQLite  `yaml:"sqlite"`
 	CouchDB DatabaseCouchDB            `yaml:"couch_db"`
 }
 
 // DatabaseLevelDB leveldb config options
 type DatabaseLevelDB struct {
 	DbPath string `yaml:"path"`
+}
+
+// DatabaseSQLite sqlite config option
+type DatabaseSQLite struct {
+	DbPath             string `yaml:"path"`
+	Options            string `yaml:"options"`
+	MaxOpenConnections int    `yaml:"maxOpenConnections"`
 }
 
 // DatabaseCouchDB couchDB config options
