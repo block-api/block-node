@@ -87,6 +87,17 @@ func (db *Database) RunMigrations() error {
 	return nil
 }
 
+func (db *Database) RevertMigrations() error {
+	for _, dbSQLite := range db.sqlite {
+		err := dbSQLite.RevertMigrations()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (db *Database) GetLevelDB(name string) *leveldb.DB {
 	return db.leveldb[name]
 }

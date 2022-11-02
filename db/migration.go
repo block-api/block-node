@@ -15,6 +15,10 @@ const FindMigrationEntry string = `
 	SELECT name FROM migration WHERE name = ?
 `
 
+const DeleteMigrationEntry string = `
+	DELETE FROM migration WHERE name = ?
+`
+
 type SQLMigration struct {
 	name      string
 	upQuery   string

@@ -63,6 +63,10 @@ func (s *SQLite) RevertMigrations() error {
 		if _, err := s.Db.Exec(s.migrations[i].downQuery); err != nil {
 			return err
 		}
+
+		if _, err := s.Db.Exec(DeleteMigrationEntry, s.migrations[i].name); err != nil {
+			return err
+		}
 	}
 
 	return nil
