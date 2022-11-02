@@ -33,7 +33,7 @@ Supported communication methods:
 In the future we will provide support for additional databases:
 
 - [x] LevelDB
-- [ ] SQLite
+- [x] SQLite
 - [ ] PostgreSQL
 
 **Below you can find infratructure examples** 
