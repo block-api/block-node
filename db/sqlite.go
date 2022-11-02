@@ -28,11 +28,26 @@ func (s *SQLite) RunMigrations() error {
 	}
 
 	for _, migration := range s.migrations {
-		if _, err := s.Db.Exec(migration.createQuery); err != nil {
+		row := s.Db.QueryRow(FindMigrationEntry, migration.name)
+		if row.Err() != nil {
+			return row.Err()
+		}
+
+		var name string
+		_ = row.Scan(&name)
+		if name != "" {
+			continue
+		}
+
+		if _, err := s.Db.Exec(migration.upQuery); err != nil {
 			return err
 		}
 
-		_, _ = s.Db.Exec(NewMigrationEntry, migration.name, time.Now().Unix())
+		_, err := s.Db.Exec(NewMigrationEntry, migration.name, time.Now().Unix())
+		if err != nil {
+			return err
+		}
+
 	}
 
 	return nil
@@ -45,7 +60,7 @@ func (s *SQLite) RevertMigrations() error {
 	}
 
 	for i := len(s.migrations) - 1; i >= 0; i-- {
-		if _, err := s.Db.Exec(s.migrations[i].dropQuery); err != nil {
+		if _, err := s.Db.Exec(s.migrations[i].downQuery); err != nil {
 			return err
 		}
 	}

@@ -11,16 +11,20 @@ const NewMigrationEntry string = `
 	INSERT INTO migration (name, created_at) VALUES (?, ?)
 `
 
+const FindMigrationEntry string = `
+	SELECT name FROM migration WHERE name = ?
+`
+
 type SQLMigration struct {
-	name        string
-	createQuery string
-	dropQuery   string
+	name      string
+	upQuery   string
+	downQuery string
 }
 
-func NewSQLMigration(name string, createQuery string, dropQuery string) SQLMigration {
+func NewSQLMigration(name string, upQuery string, downQuery string) SQLMigration {
 	return SQLMigration{
-		name:        name,
-		createQuery: createQuery,
-		dropQuery:   dropQuery,
+		name:      name,
+		upQuery:   upQuery,
+		downQuery: downQuery,
 	}
 }
