@@ -22,6 +22,7 @@ type Database struct {
 }
 
 // NewDatabase creates new database struct
+
 func NewDatabase(config *config.Database) *Database {
 	if database == nil {
 		lock.Lock()

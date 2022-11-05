@@ -57,6 +57,13 @@ type DatabaseSQLite struct {
 	MaxOpenConnections int    `yaml:"maxOpenConnections"`
 }
 
+// DatabaseSQLite sqlite config option
+type DatabaseSQLite struct {
+	DbPath             string `yaml:"path"`
+	Options            string `yaml:"options"`
+	MaxOpenConnections int    `yaml:"maxOpenConnections"`
+}
+
 // DatabaseCouchDB couchDB config options
 type DatabaseCouchDB struct {
 	Host     string `yaml:"host"`
