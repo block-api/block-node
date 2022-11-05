@@ -315,16 +315,6 @@ func (bn *BlockNode) ReceiveResponse(payload []byte) {
 	}
 
 	bn.sentHashesMutex.Lock()
-	//var i = 0
-	//var sentHashesLength = len(bn.sentHashes)
-	//
-	//for ; i < sentHashesLength; i++ {
-	//	if bn.sentHashes[i].hash == pocket.ResponseHash {
-	//		bn.sentHashes[i].responseChan <- pocket
-	//		break
-	//	}
-	//}
-
 	if bn.sentHashes[pocket.ResponseHash] != nil {
 		bn.sentHashes[pocket.ResponseHash].responseChan <- pocket
 	}
