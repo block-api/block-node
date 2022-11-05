@@ -17,7 +17,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var instantiated bool
+var lock = new(sync.Mutex)
+var blockNode *BlockNode
 
 type SentHash struct {
 	hash         string
@@ -42,6 +43,10 @@ type BlockNode struct {
 type BlockNodeOptions struct {
 	Name    string
 	Version uint
+}
+
+func GetBlockNode() *BlockNode {
+	return blockNode
 }
 
 // Start will start BlockNode
@@ -322,26 +327,27 @@ func (bn *BlockNode) ReceiveResponse(payload []byte) {
 }
 
 // NewBlockNode creates new BlockNode struct
-func NewBlockNode(options *BlockNodeOptions) BlockNode {
-	if instantiated {
-		panic(errors.ErrBlockNodeInstantiated)
+func NewBlockNode(options *BlockNodeOptions) *BlockNode {
+	if blockNode == nil {
+		lock.Lock()
+		defer lock.Unlock()
+
+		nodeID := common.CreateNodeID(options.Version, options.Name)
+
+		blockNode = &BlockNode{
+			nodeID:          nodeID,
+			nodeVersionName: common.CreateNodeVersionName(options.Version, options.Name),
+			options:         *options,
+			blocks:          make(map[types.BlockName]IBlock),
+			transporter:     nil,
+			trafficManager:  traffic.NewManager(&nodeID),
+			daemonChan:      make(chan uint),
+			sentHashes:      map[string]*SentHash{},
+			sentHashesMutex: new(sync.Mutex),
+		}
+
+		return blockNode
 	}
 
-	nodeID := common.CreateNodeID(options.Version, options.Name)
-
-	bn := BlockNode{
-		nodeID:          nodeID,
-		nodeVersionName: common.CreateNodeVersionName(options.Version, options.Name),
-		options:         *options,
-		blocks:          make(map[types.BlockName]IBlock),
-		transporter:     nil,
-		trafficManager:  traffic.NewManager(&nodeID),
-		daemonChan:      make(chan uint),
-		sentHashes:      map[string]*SentHash{},
-		sentHashesMutex: new(sync.Mutex),
-	}
-
-	instantiated = true
-
-	return bn
+	panic(errors.ErrBlockNodeInstantiated)
 }
