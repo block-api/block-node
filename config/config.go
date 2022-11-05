@@ -46,7 +46,8 @@ type Database struct {
 
 // DatabaseLevelDB leveldb config options
 type DatabaseLevelDB struct {
-	DbPath string `yaml:"path"`
+	DbPath          string `yaml:"path"`
+	WriteBufferSize int    `yaml:"writeBufferSize"`
 }
 
 // DatabaseSQLite sqlite config option

@@ -56,7 +56,7 @@ func (bn *BlockNode) Send(payload *transporter.PayloadMessage, targetAction *typ
 			}
 
 			pocket.TargetID = targetNodeID
-			
+
 			pocketBytes, err := json.Marshal(pocket)
 			if err != nil {
 				log.Warning(err.Error())
@@ -72,7 +72,7 @@ func (bn *BlockNode) Send(payload *transporter.PayloadMessage, targetAction *typ
 			bn.sentHashesMutex.Lock()
 			bn.sentHashes[pocket.Hash] = &SentHash{time: time.Now(), responseChan: make(chan transporter.Pocket[[]byte])}
 
-			var responsePayloadChan chan *transporter.PayloadMessage = make(chan *transporter.PayloadMessage)
+			var responsePayloadChan = make(chan *transporter.PayloadMessage)
 
 			go func(timeout uint, responseChan chan *transporter.PayloadMessage, receivedResponsePocket chan transporter.Pocket[[]byte]) {
 				timer := time.NewTimer(time.Duration(timeout) * time.Second)

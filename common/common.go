@@ -20,7 +20,7 @@ type Hash []byte
 type Sig []byte
 type Timestamp int64
 
-func RemoveFromSlice(slice []interface{}, index int) []interface{} {
+func RemoveFromSlice[T any](slice []*T, index int) []*T {
 	sliceLen := len(slice)
 	sliceLastIndex := sliceLen - 1
 

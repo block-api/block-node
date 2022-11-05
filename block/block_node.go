@@ -20,6 +20,7 @@ import (
 var instantiated bool
 
 type SentHash struct {
+	hash         string
 	time         time.Time
 	responseChan chan transporter.Pocket[[]byte]
 }
@@ -31,7 +32,7 @@ type BlockNode struct {
 	config          config.Config
 	options         BlockNodeOptions
 	transporter     transporter.Transporter
-	database        db.Database
+	database        *db.Database
 	trafficManager  traffic.Manager
 	daemonChan      chan uint
 	sentHashes      map[string]*SentHash
@@ -183,7 +184,7 @@ func (bn *BlockNode) VersionName() types.NodeVersionName {
 }
 
 func (bn *BlockNode) Database() *db.Database {
-	return &bn.database
+	return bn.database
 }
 
 func (bn *BlockNode) loadDatabase() {
@@ -314,6 +315,16 @@ func (bn *BlockNode) ReceiveResponse(payload []byte) {
 	}
 
 	bn.sentHashesMutex.Lock()
+	//var i = 0
+	//var sentHashesLength = len(bn.sentHashes)
+	//
+	//for ; i < sentHashesLength; i++ {
+	//	if bn.sentHashes[i].hash == pocket.ResponseHash {
+	//		bn.sentHashes[i].responseChan <- pocket
+	//		break
+	//	}
+	//}
+
 	if bn.sentHashes[pocket.ResponseHash] != nil {
 		bn.sentHashes[pocket.ResponseHash].responseChan <- pocket
 	}
@@ -336,7 +347,7 @@ func NewBlockNode(options *BlockNodeOptions) BlockNode {
 		transporter:     nil,
 		trafficManager:  traffic.NewManager(&nodeID),
 		daemonChan:      make(chan uint),
-		sentHashes:      make(map[string]*SentHash),
+		sentHashes:      map[string]*SentHash{},
 		sentHashesMutex: new(sync.Mutex),
 	}
 
