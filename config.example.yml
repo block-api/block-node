@@ -15,6 +15,7 @@ database:
     # required database
     discovery:
       dbPath: /var/block-node/data/discovery.db
+      writeBufferSize: 1024
   sqlite:
     # uncomment to use
 #    default:
