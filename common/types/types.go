@@ -1,6 +1,10 @@
 package types
 
-import "github.com/block-api/block-node/errors"
+import "errors"
+
+var (
+	ErrInvalidTargetAction = errors.New("invalid target action")
+)
 
 type (
 	NodeID          string
@@ -20,7 +24,7 @@ type TargetAction struct {
 
 func (ta *TargetAction) Validate() error {
 	if ta.Name.String() == "" || ta.Block.String() == "" || ta.Action.String() == "" {
-		return errors.ErrInvalidTargetAction
+		return ErrInvalidTargetAction
 	}
 
 	return nil

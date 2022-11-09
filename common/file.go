@@ -2,12 +2,16 @@ package common
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"os"
 
-	"github.com/block-api/block-node/errors"
 	"github.com/block-api/block-node/log"
 	"gopkg.in/yaml.v3"
+)
+
+var (
+	ErrInvalidFileType = errors.New("invalid file type")
 )
 
 type Type string
@@ -68,7 +72,7 @@ func (f *File) Parse(out interface{}) error {
 		return nil
 	}
 
-	return errors.ErrInvalidFileType
+	return ErrInvalidFileType
 }
 
 func (f *File) parseJSON(out interface{}) error {
