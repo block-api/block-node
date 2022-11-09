@@ -2,28 +2,29 @@ package db
 
 import (
 	"database/sql"
-	"github.com/block-api/block-node/config"
+	"os"
+	"sync"
+
 	"github.com/block-api/block-node/log"
+	"github.com/block-api/block-node/params"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/filter"
 	"github.com/syndtr/goleveldb/leveldb/opt"
-	"os"
-	"sync"
 )
 
 var lock = new(sync.Mutex)
 var database *Database
 
 type Database struct {
-	config  *config.Database
+	config  *params.Database
 	leveldb map[string]*leveldb.DB
 	sqlite  map[string]*SQLite
 }
 
 // NewDatabase creates new database struct
 
-func NewDatabase(config *config.Database) *Database {
+func NewDatabase(config *params.Database) *Database {
 	if database == nil {
 		lock.Lock()
 		defer lock.Unlock()
