@@ -19,6 +19,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/block-api/block-node/block"
 	"github.com/block-api/block-node/cmd/utils"
 	"github.com/urfave/cli/v2"
 )
@@ -46,4 +47,21 @@ func main() {
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
+
+	bn, err := block.NewNode()
+	if err != nil {
+		log.Panic(err)
+	}
+
+	bn.Start()
+
+	// configFile, _ := common.OpenFile("/Users/mac/go/src/github.com/block-api/block-node/config.example.yml", common.YML)
+	// if configFile != nil {
+	// 	var cfg params.NodeConfig
+
+	// 	_ = configFile.Parse(&cfg)
+
+	// 	fmt.Println(cfg)
+
+	// }
 }

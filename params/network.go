@@ -36,4 +36,6 @@ const DefaultNetworkActionTimeout int = 15
 // from other nodes network topology - hence will be not receiving requests
 const DefaultNetworkHeartbeatInterval int = 5
 
-type NetworkConfig struct{}
+type NetworkConfig struct {
+	Transport string `yaml:"transport"`
+}

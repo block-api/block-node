@@ -17,13 +17,18 @@ package block
 
 import (
 	"errors"
+	"log"
+	"os"
 	"sync"
 
+	"github.com/block-api/block-node/common"
 	"github.com/block-api/block-node/params"
+	"github.com/joho/godotenv"
 )
 
 var (
 	ErrAlreadyInstantiatied = errors.New("node is already instantiated")
+	ErrConfigFileNotFound   = errors.New("config file not found")
 )
 
 var (
@@ -39,14 +44,42 @@ type Node struct {
 }
 
 // New creates new node instance, there can be only one instance of node in your program
-func NewNode(config *params.NodeConfig) (*Node, error) {
+func NewNode() (*Node, error) {
 	if node == nil {
 		nodeLock.Lock()
 		defer nodeLock.Unlock()
 
+		_ = godotenv.Load()
+
+		configFile := os.Getenv("CONFIG_FILE")
+		dataDir := os.Getenv("DATA_DIR")
+
+		if dataDir == "" {
+			dataDir = params.DefaultDataDir
+		}
+
+		if configFile == "" {
+			configFile = dataDir + "/config.yml"
+		}
+
+		var config *params.NodeConfig
+
+		cfgFile, err := common.OpenFile(configFile, common.YML)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		if cfgFile != nil {
+			err = cfgFile.Parse(&config)
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+		}
+
 		node = &Node{
 			config: config,
 		}
+
 		return node, nil
 	}
 	return nil, ErrAlreadyInstantiatied
@@ -61,3 +94,5 @@ func GetNode() *Node {
 func (n *Node) ID() string {
 	return n.id
 }
+
+func (n *Node) Start() {}

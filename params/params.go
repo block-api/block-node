@@ -16,15 +16,14 @@
 package params
 
 // DefaultDataDir default directory where data (eg database) will be stored
-const DefaultDataDir = "/usr/local/block-node/data"
+const DefaultDataDir = "/usr/local/block-node"
 
-type ConfigFile struct {
-	NodeConfig
-	Debug   bool          `yaml:"debug"`
-	Network NetworkConfig `yaml:"network"`
-}
-
+// NodeConfig block node configuration options
+// these can be set in config file
 type NodeConfig struct {
-	Name    string `yaml:"name"`
-	Version int    `yaml:"version"`
+	Debug    bool           `yaml:"debug"`
+	Name     string         `yaml:"name"`
+	Version  int            `yaml:"version"`
+	Network  NetworkConfig  `yaml:"network"`
+	Database DatabaseConfig `yaml:"database"`
 }

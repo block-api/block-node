@@ -50,6 +50,7 @@ func OpenFile(filePath string, fileType Type) (*File, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	content, _ := ioutil.ReadAll(file)
 
@@ -58,12 +59,6 @@ func OpenFile(filePath string, fileType Type) (*File, error) {
 		content:  content,
 		fileType: fileType,
 	}, nil
-}
-
-func (f *File) Close() {
-	if f.file != nil {
-		_ = f.file.Close()
-	}
 }
 
 func (f *File) Parse(out interface{}) error {
@@ -79,7 +74,6 @@ func (f *File) Parse(out interface{}) error {
 
 	if f.fileType == YML {
 		err := f.parseYML(out)
-
 		if err != nil {
 			return err
 		}

@@ -30,7 +30,7 @@ var (
 		Name:        "config-file",
 		Category:    GeneralCategoryFlag,
 		Required:    false,
-		DefaultText: params.DefaultDataDir,
+		DefaultText: params.DefaultDataDir + "/config.yml",
 		Usage:       "Absolute path to config.yml file",
 	}
 
@@ -39,7 +39,7 @@ var (
 		Category:    GeneralCategoryFlag,
 		Required:    false,
 		DefaultText: params.DefaultDataDir,
-		Usage:       "Absolute path to directory where database data are stored",
+		Usage:       "Absolute path to directory where data are stored",
 	}
 
 	NetworkTransportFlag = &cli.StringFlag{
