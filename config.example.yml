@@ -1,24 +1,54 @@
 debug: true
-type: "node" # node / storage
-transporter:
-  timeout: 30 # default timeout for actions, in seconds
-  heartbeatInterval: 5 # in seconds
-  deliveryMethod: random
-  redis:
-    host: localhost
-    port: 6379
-    username:
-    password:
-    db: 0
+# service name eg "auth-service"
+name: "example-service"
+# service version
+version: 1
+# ** experimental feature **
+# load block functions dynamically, can use go/nodejs runtime
+# these should be placed under $CONFIG_DIR/blocks/
+# eg:
+#   - $CONFIG_DIR/blocks/hello-world-block/hi/handler.js
+#   - $CONFIG_DIR/blocks/ping-pong-block/ping/handler.go
+blocks:
+  hello-world-block:
+    hi:
+      name: "hi"
+      runtime: "node"
+  ping-pong-block:
+    ping:
+      name: "ping"
+      runtime: "go"
+# -- network settings --
+network:
+  # memory cache size in MB
+  memory_cache: 100
+  # default packet delivery method: all / random
+  delivery: "random"
+  # transport type: tcp / redis
+  transport: "tcp"
+  # selected transport setting
+  settings:
+    public_host: "localhost"
+    public_port: "8090"
+    bind_host: "0.0.0.0"
+    bind_port: "8090"
+  # known nodes at startup - will send heartbeat
+  nodes:
+    - transport: "tcp"
+      public_host: "localhost"
+      public_port: "8090"
+# -- databases settings ---
+#
+# database with "sys_" prefix are required
+# and must be set for system to be working
 database:
-  leveldb:
-    # required database
-    discovery:
-      dbPath: /var/block-node/data/discovery.db
-      writeBufferSize: 1024
-  sqlite:
-    # uncomment to use
-#    default:
-#      path: "/var/block-node/data/default.sqlite"
-#      options: "cache=shared&mode=rw"
-#      maxOpenConnections: 0
+  sys_cache:
+    type: "leveldb"
+    settings:
+      path: "/var/block-node/data/db_sys_cache"
+  sys_internal:
+    type: "sqlite"
+    settings:
+      path: "/var/block-node/data/db_sys_internal.sqlite"
+      options: "cache=shared&mode=rw"
+      maxOpenConnections: 1
