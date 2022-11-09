@@ -35,3 +35,5 @@ const DefaultNetworkActionTimeout int = 15
 // are not sending heartbeat peridiocaly will be automatically removed
 // from other nodes network topology - hence will be not receiving requests
 const DefaultNetworkHeartbeatInterval int = 5
+
+type NetworkConfig struct{}

@@ -20,7 +20,8 @@ const DefaultDataDir = "/usr/local/block-node/data"
 
 type ConfigFile struct {
 	NodeConfig
-	Debug bool `yaml:"debug"`
+	Debug   bool          `yaml:"debug"`
+	Network NetworkConfig `yaml:"network"`
 }
 
 type NodeConfig struct {
