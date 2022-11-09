@@ -3,6 +3,8 @@ debug: true
 name: "example-service"
 # service version
 version: 1
+# directory where data (eg databases) is stored
+data_dir: "/usr/local/block-node/data"
 # ** experimental feature **
 # load block functions dynamically, can use go/nodejs runtime
 # these should be placed under $CONFIG_DIR/blocks/
@@ -42,13 +44,18 @@ network:
 # database with "sys_" prefix are required
 # and must be set for system to be working
 database:
-  sys_cache:
-    type: "leveldb"
-    settings:
-      path: "/var/block-node/data/db_sys_cache"
-  sys_internal:
+  default:
     type: "sqlite"
-    settings:
-      path: "/var/block-node/data/db_sys_internal.sqlite"
-      options: "cache=shared&mode=rw"
-      maxOpenConnections: 1
+    path: "/db_default.sqlite"
+    options: "cache=shared&mode=rw"
+    maxOpenConnections: 1
+  # sys_cache:
+  #   type: "leveldb"
+  #   settings:
+  #     path: "/var/block-node/data/db_sys_cache"
+  # sys_internal:
+  #   type: "sqlite"
+  #   settings:
+  #     path: "/var/block-node/data/db_sys_internal.sqlite"
+  #     options: "cache=shared&mode=rw"
+  #     maxOpenConnections: 1
