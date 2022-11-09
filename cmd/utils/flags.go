@@ -15,10 +15,29 @@
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
 package utils
 
-import "github.com/urfave/cli/v2"
+import (
+	"github.com/block-api/block-node/params"
+	"github.com/urfave/cli/v2"
+)
+
+var (
+	GeneralCategoryFlag = "General"
+	NetworkCategoryFlag = "Network"
+)
 
 var (
 	DataDirFlag = &cli.StringFlag{
-		Name: "data_dir",
+		Name:        "data_dir",
+		Category:    GeneralCategoryFlag,
+		Required:    false,
+		DefaultText: params.DefaultDataDir,
+		Usage:       "Absolute path to directory where database data are stored",
+	}
+
+	NetworkTransportFlag = &cli.StringFlag{
+		Name:        "transport",
+		Category:    NetworkCategoryFlag,
+		DefaultText: string(params.DefaultNetworkTransport),
+		Usage:       "Network transport method eg tcp / redis",
 	}
 )

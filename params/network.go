@@ -13,32 +13,19 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
-package main
+package params
 
-import (
-	"log"
-	"os"
+import "github.com/block-api/block-node/network/transport"
 
-	"github.com/block-api/block-node/cmd/utils"
-	"github.com/urfave/cli/v2"
-)
+// DefaultNetworkTransport default transport method used by block node network module
+const DefaultNetworkTransport = transport.TCP
 
-var (
-	nodeFlags = utils.FlagsMerge(
-		utils.DataDirFlag,
-		// network flags
-		utils.NetworkTransportFlag,
-	)
+// DefaultActionTimeout defines default time out for block actions.
+// If no timeout was defined in config file this value will be used
+const DefaultNetworkActionTimeout int = 15
 
-	app = &cli.App{
-		Name:    "block-node",
-		Version: "0.2.0",
-		Flags:   nodeFlags,
-	}
-)
-
-func main() {
-	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
-	}
-}
+// DefaultHeartbeatInterval defines how often node will be sending
+// heartbeat packet to other known nodes in the network. Nodes which
+// are not sending heartbeat peridiocaly will be automatically removed
+// from other nodes network topology - hence will be not receiving requests
+const DefaultNetworkHeartbeatInterval int = 5

@@ -15,15 +15,8 @@
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
 package params
 
-// DefaultActionTimeout defines default time out for block actions.
-// If no timeout was defined in config file this value will be used
-const DefaultActionTimeout int = 15
-
-// DefaultHeartbeatInterval defines how often node will be sending
-// heartbeat packet to other known nodes in the network. Nodes which
-// are not sending heartbeat peridiocaly will be automatically removed
-// from other nodes network topology - hence will be not receiving requests
-const DefaultHeartbeatInterval int = 5
+// DefaultDataDir default directory where data (eg database) will be stored
+const DefaultDataDir = "/usr/local/block-node/data"
 
 type ConfigFile struct {
 	NodeConfig
