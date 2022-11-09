@@ -1,3 +1,18 @@
+// Copyright 2022 The block-node Authors
+// This file is part of the block-node library.
+//
+// The block-node library is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The block-node library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
 package db
 
 import (
@@ -17,14 +32,14 @@ var lock = new(sync.Mutex)
 var database *Database
 
 type Database struct {
-	config  *params.Database
+	config  *params.DatabaseConfig
 	leveldb map[string]*leveldb.DB
 	sqlite  map[string]*SQLite
 }
 
 // NewDatabase creates new database struct
 
-func NewDatabase(config *params.Database) *Database {
+func NewDatabase(config *params.DatabaseConfig) *Database {
 	if database == nil {
 		lock.Lock()
 		defer lock.Unlock()
