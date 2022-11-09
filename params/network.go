@@ -20,6 +20,12 @@ import "github.com/block-api/block-node/network/transport"
 // DefaultNetworkTransport default transport method used by block node network module
 const DefaultNetworkTransport = transport.TCP
 
+// Default bind host
+const DefaultNetworkBindHost = "0.0.0.0"
+
+// Default bind port
+const DefaultNetworkBindPort = "8090"
+
 // DefaultActionTimeout defines default time out for block actions.
 // If no timeout was defined in config file this value will be used
 const DefaultNetworkActionTimeout int = 15

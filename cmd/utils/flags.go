@@ -26,8 +26,16 @@ var (
 )
 
 var (
+	ConfigFileFlag = &cli.StringFlag{
+		Name:        "config-file",
+		Category:    GeneralCategoryFlag,
+		Required:    false,
+		DefaultText: params.DefaultDataDir,
+		Usage:       "Absolute path to config.yml file",
+	}
+
 	DataDirFlag = &cli.StringFlag{
-		Name:        "data_dir",
+		Name:        "data-dir",
 		Category:    GeneralCategoryFlag,
 		Required:    false,
 		DefaultText: params.DefaultDataDir,
@@ -39,5 +47,19 @@ var (
 		Category:    NetworkCategoryFlag,
 		DefaultText: string(params.DefaultNetworkTransport),
 		Usage:       "Network transport method eg tcp / redis",
+	}
+
+	NetworkBindHostFlag = &cli.StringFlag{
+		Name:        "bind-host",
+		Category:    NetworkCategoryFlag,
+		DefaultText: params.DefaultNetworkBindHost,
+		Usage:       "Set bind host",
+	}
+
+	NetworkBindPortFlag = &cli.StringFlag{
+		Name:        "bind-port",
+		Category:    NetworkCategoryFlag,
+		DefaultText: params.DefaultNetworkBindPort,
+		Usage:       "Set bind port",
 	}
 )

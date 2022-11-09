@@ -25,15 +25,20 @@ import (
 
 var (
 	nodeFlags = utils.FlagsMerge(
+		utils.ConfigFileFlag,
 		utils.DataDirFlag,
 		// network flags
 		utils.NetworkTransportFlag,
+		utils.NetworkBindHostFlag,
+		utils.NetworkBindPortFlag,
 	)
 
 	app = &cli.App{
-		Name:    "block-node",
-		Version: "0.2.0",
-		Flags:   nodeFlags,
+		Name:        "block-node",
+		Version:     "0.2.0",
+		Flags:       nodeFlags,
+		Usage:       "Block Node Functional Framework in Go",
+		Description: "You can use flags to override options from config file or environment variables",
 	}
 )
 
