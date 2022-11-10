@@ -45,7 +45,7 @@ var (
 		Flags:       nodeFlags,
 		Commands:    nodeCommands,
 		Usage:       "Block Node Functional Framework in Go",
-		Description: "You can use flags to override options from config file or environment variables. Read more at https://docs.blockapi.dev/",
+		Description: "You can use flags to override options from config file or environment variables. Read more at https://docs.blockapi.dev/\n\nIf you want to support this project please donate at 0x7a42639f09729eb02de32f1dd21447806cc52ba8",
 	}
 )
 
