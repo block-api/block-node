@@ -73,6 +73,7 @@ func NewNode() (*Node, error) {
 		}
 
 		node = &Node{
+			id:             account.wallet.Address.String(),
 			config:         config,
 			account:        account,
 			networkManager: networkManager,
