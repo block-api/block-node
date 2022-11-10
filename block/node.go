@@ -17,11 +17,12 @@ package block
 
 import (
 	"errors"
-	"log"
 	"os"
 	"sync"
 
 	"github.com/block-api/block-node/common"
+	"github.com/block-api/block-node/log"
+	"github.com/block-api/block-node/network"
 	"github.com/block-api/block-node/params"
 	"github.com/joho/godotenv"
 )
@@ -39,8 +40,11 @@ var (
 // Node is main struct describing node
 type Node struct {
 	// id is unique identifier for node instance
-	id     string
-	config *params.NodeConfig
+	id             string
+	config         *params.NodeConfig
+	networkManager *network.Manager
+	cStop          chan int
+	wgNodeWorker   *sync.WaitGroup
 }
 
 // New creates new node instance, there can be only one instance of node in your program
@@ -62,7 +66,7 @@ func NewNode() (*Node, error) {
 			configFile = dataDir + "/config.yml"
 		}
 
-		var config *params.NodeConfig
+		var config = new(params.NodeConfig)
 
 		cfgFile, err := common.OpenFile(configFile, common.YML)
 		if err != nil {
@@ -70,14 +74,24 @@ func NewNode() (*Node, error) {
 		}
 
 		if cfgFile != nil {
-			err = cfgFile.Parse(&config)
+			err = cfgFile.Parse(config)
 			if err != nil {
 				log.Fatal(err.Error())
 			}
 		}
 
+		// todo: config validation
+
+		networkManager, err := network.NewManager(&config.Network)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
 		node = &Node{
-			config: config,
+			config:         config,
+			networkManager: networkManager,
+			cStop:          make(chan int),
+			wgNodeWorker:   new(sync.WaitGroup),
 		}
 
 		return node, nil
@@ -95,4 +109,23 @@ func (n *Node) ID() string {
 	return n.id
 }
 
-func (n *Node) Start() {}
+// Config returns pointer to NodeConfig
+func (n *Node) Config() *params.NodeConfig {
+	return n.config
+}
+
+// Stop sends information to cStop channel to stop program
+func (n *Node) Stop() {
+	n.cStop <- 1
+
+	n.wgNodeWorker.Wait()
+
+	log.Debug("node stopped")
+}
+
+// Start runs all needed actions to start node
+func (n *Node) Start() {
+	n.wgNodeWorker.Add(1)
+
+	go nodeWorker(n)
+}

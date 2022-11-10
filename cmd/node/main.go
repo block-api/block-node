@@ -16,16 +16,20 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/block-api/block-node/block"
 	"github.com/block-api/block-node/cmd/utils"
+	"github.com/block-api/block-node/log"
 	"github.com/urfave/cli/v2"
 )
 
 var (
 	nodeFlags = utils.FlagsMerge(
+		// general flags
 		utils.ConfigFileFlag,
 		utils.DataDirFlag,
 		// network flags
@@ -45,23 +49,28 @@ var (
 
 func main() {
 	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 
-	bn, err := block.NewNode()
+	node, err := block.NewNode()
 	if err != nil {
-		log.Panic(err)
+		log.Panic(err.Error())
 	}
 
-	bn.Start()
+	node.Start()
 
-	// configFile, _ := common.OpenFile("/Users/mac/go/src/github.com/block-api/block-node/config.example.yml", common.YML)
-	// if configFile != nil {
-	// 	var cfg params.NodeConfig
+	fmt.Println(node.Config())
 
-	// 	_ = configFile.Parse(&cfg)
+	var osSignal chan os.Signal = make(chan os.Signal)
+	signal.Notify(osSignal, os.Interrupt, syscall.SIGTERM)
 
-	// 	fmt.Println(cfg)
+	for {
+		select {
+		case <-osSignal:
+			log.Warning("shutting down, please wait")
+			node.Stop()
 
-	// }
+			os.Exit(0)
+		}
+	}
 }
