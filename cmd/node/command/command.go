@@ -13,44 +13,16 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
-package main
+package command
 
 import (
-	"os"
-
-	"github.com/block-api/block-node/cmd/node/command"
-	"github.com/block-api/block-node/cmd/utils"
-	"github.com/block-api/block-node/log"
 	"github.com/urfave/cli/v2"
 )
 
 var (
-	nodeFlags = utils.FlagsMerge(
-		// general flags
-		utils.ConfigFileFlag,
-		utils.DataDirFlag,
-		// network flags
-		utils.NetworkTransportFlag,
-		utils.NetworkBindHostFlag,
-		utils.NetworkBindPortFlag,
-	)
-
-	nodeCommands = utils.CommandsMerge(
-		command.StartCmd,
-	)
-
-	app = &cli.App{
-		Name:        "block-node",
-		Version:     "0.2.0",
-		Flags:       nodeFlags,
-		Commands:    nodeCommands,
-		Usage:       "Block Node Functional Framework in Go",
-		Description: "You can use flags to override options from config file or environment variables. Read more at https://docs.blockapi.dev/",
+	StartCmd = &cli.Command{
+		Name:   "start",
+		Usage:  "starts block node",
+		Action: StartNode,
 	}
 )
-
-func main() {
-	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err.Error())
-	}
-}
