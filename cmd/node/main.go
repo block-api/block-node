@@ -37,6 +37,7 @@ var (
 
 	nodeCommands = utils.CommandsMerge(
 		command.StartCmd,
+		command.NewAccountCmd,
 	)
 
 	app = &cli.App{

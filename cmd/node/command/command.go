@@ -25,4 +25,10 @@ var (
 		Usage:  "starts block node",
 		Action: StartNode,
 	}
+
+	NewAccountCmd = &cli.Command{
+		Name:   "new-account",
+		Usage:  "generates new node account and display credentials",
+		Action: GenerateNewNodeAccount,
+	}
 )

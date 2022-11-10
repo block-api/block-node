@@ -16,37 +16,28 @@
 package command
 
 import (
-	"os"
-	"os/signal"
-	"syscall"
-
-	"github.com/block-api/block-node/block"
 	"github.com/block-api/block-node/log"
+	"github.com/block-api/block-node/wallet/eth"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/urfave/cli/v2"
 )
 
-func StartNode(cCtx *cli.Context) error {
-	node, err := block.NewNode()
+func GenerateNewNodeAccount(cCtx *cli.Context) error {
+	wallet, err := eth.CreateWallet()
 	if err != nil {
 		return err
 	}
 
-	node.Start()
-
-	var osSignal chan os.Signal = make(chan os.Signal, 1)
-	signal.Notify(osSignal, os.Interrupt, syscall.SIGTERM)
-
-	for {
-		select {
-		case <-osSignal:
-			log.Warning("shutting down, please wait")
-			node := block.GetNode()
-
-			if node != nil {
-				block.GetNode().Stop()
-			}
-
-			os.Exit(0)
-		}
-	}
+	log.Warning("! WARNING !")
+	log.Warning("New node account has been generated, please write details down. The most important is private key.")
+	log.Warning("These informations are displayed only once for you at this time and are not being saved anywhere.")
+	log.Warning("")
+	log.Warning("- NODE ACCOUNT DETAILS -")
+	log.Warning("")
+	log.Warning("ID: " + wallet.Address.String())
+	log.Warning("Public Key: " + hexutil.Encode(wallet.PublicKey.X.Bytes()))
+	log.Warning("Private Key: " + hexutil.Encode(wallet.PrivateKey.D.Bytes()))
+	log.Warning("")
+	log.Warning("------------------------")
+	return nil
 }

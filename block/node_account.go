@@ -39,8 +39,8 @@ var (
 // Upon startup it will check for provided environment variable NODE_PRIVATE_KEY,
 // and in DATA_DIR directory (for json file with account credentials) and validate them.
 //
-// If none of these is present it will generate each time new set of private & public keys
-// until previous requirements are not met.
+// If none of these is present it will not allow to start node instance.
+// To generate new node account you can use `new-account` command for cli eg block-node new-account.
 //
 // There is allowed only one instance of NodeAccount in the system.
 // If you wish to use ETH wallets in your project you can use wallet/eth package instead.
