@@ -31,6 +31,8 @@ func StartNode(cCtx *cli.Context) error {
 		return err
 	}
 
+	log.Default("starting block node v" + cCtx.App.Version)
+
 	node.Start()
 
 	var osSignal chan os.Signal = make(chan os.Signal, 1)
