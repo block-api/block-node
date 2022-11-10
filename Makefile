@@ -9,7 +9,7 @@ build:
 	make node 
 dev:
 	@echo "\n> --- run in development mode --"
-	DEBUG=true DATA_DIR=./build go run ./cmd/node/main.go
+	DEBUG=true DATA_DIR=./build go run ./cmd/node/main.go $(cmd)
 node:
 	mkdir -p $(GOBIN)
 	cd ./cmd/node/ && go fmt ./... && $(GOBUILD) -o ./../../$(GOBIN)/block-node
