@@ -16,6 +16,8 @@
 package block
 
 import (
+	"os"
+
 	"github.com/block-api/block-node/common"
 	"github.com/block-api/block-node/params"
 )
@@ -37,6 +39,12 @@ func loadConfigFile(configFilePath string) (*params.NodeConfig, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	// check if DATA_DIR is set in env, if yes then override value from config file
+	dataDir := os.Getenv("DATA_DIR")
+	if dataDir != "" {
+		config.DataDir = dataDir
 	}
 
 	return config, nil

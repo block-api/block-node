@@ -54,15 +54,11 @@ func NewNode() (*Node, error) {
 
 		_ = godotenv.Load()
 
+		// load config file
 		configFilePath := os.Getenv("CONFIG_FILE")
 		config, err := loadConfigFile(configFilePath)
 		if err != nil {
 			return nil, err
-		}
-
-		dataDir := os.Getenv("DATA_DIR")
-		if dataDir != "" {
-			config.DataDir = dataDir
 		}
 
 		networkManager, err := network.NewManager(&config.Network)
