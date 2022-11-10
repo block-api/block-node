@@ -28,7 +28,7 @@ import (
 
 var (
 	ErrAlreadyInstantiatied = errors.New("node is already instantiated")
-	ErrConfigFileNotFound   = errors.New("config file not found")
+	ErrConfigFileNotFound   = errors.New("config.yml file not found")
 )
 
 var (
@@ -38,9 +38,10 @@ var (
 
 // Node is main struct describing node
 type Node struct {
-	// id is unique identifier for node instance
+	// id is unique identifier for node instance - node account wallet address
 	id             string
 	config         *params.NodeConfig
+	account        *NodeAccount
 	networkManager *network.Manager
 	cStop          chan int
 	wgNodeWorker   *sync.WaitGroup
@@ -66,8 +67,14 @@ func NewNode() (*Node, error) {
 			log.Fatal(err.Error())
 		}
 
+		account, err := NewNodeAccount()
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
 		node = &Node{
 			config:         config,
+			account:        account,
 			networkManager: networkManager,
 			cStop:          make(chan int),
 			wgNodeWorker:   new(sync.WaitGroup),
