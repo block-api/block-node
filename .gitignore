@@ -2,5 +2,5 @@
 .vscode/
 .idea/
 build/
-node_modules/
-tmp
+tmp/
+.env

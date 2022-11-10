@@ -4,26 +4,9 @@ name: "example-service"
 # service version
 version: 1
 # directory where data (eg databases) is stored
-data_dir: "/usr/local/block-node/data"
-# ** experimental feature **
-# load block functions dynamically, can use go/nodejs runtime
-# these should be placed under $CONFIG_DIR/blocks/
-# eg:
-#   - $CONFIG_DIR/blocks/hello-world-block/hi/handler.js
-#   - $CONFIG_DIR/blocks/ping-pong-block/ping/handler.go
-blocks:
-  hello-world-block:
-    hi:
-      name: "hi"
-      runtime: "node"
-  ping-pong-block:
-    ping:
-      name: "ping"
-      runtime: "go"
+data_dir: "/usr/local/block-node"
 # -- network settings --
 network:
-  # memory cache size in MB
-  memory_cache: 100
   # default packet delivery method: all / random
   delivery: "random"
   # transport type: tcp / redis
@@ -39,11 +22,10 @@ network:
     - transport: "tcp"
       public_host: "localhost"
       public_port: "8090"
-# -- databases settings ---
-#
-# database with "sys_" prefix are required
-# and must be set for system to be working
+# -- database settings ---
 database:
+  # size in MB
+  memory_cache: 128
   default:
     type: "sqlite"
     path: "/db_default.sqlite"
