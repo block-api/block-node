@@ -20,7 +20,6 @@ import (
 	"os"
 	"sync"
 
-	"github.com/block-api/block-node/common"
 	"github.com/block-api/block-node/log"
 	"github.com/block-api/block-node/network"
 	"github.com/block-api/block-node/params"
@@ -55,32 +54,16 @@ func NewNode() (*Node, error) {
 
 		_ = godotenv.Load()
 
-		configFile := os.Getenv("CONFIG_FILE")
-		dataDir := os.Getenv("DATA_DIR")
-
-		if dataDir == "" {
-			dataDir = params.DefaultDataDir
-		}
-
-		if configFile == "" {
-			configFile = dataDir + "/config.yml"
-		}
-
-		var config = new(params.NodeConfig)
-
-		cfgFile, err := common.OpenFile(configFile, common.YML)
+		configFilePath := os.Getenv("CONFIG_FILE")
+		config, err := loadConfigFile(configFilePath)
 		if err != nil {
-			log.Fatal(err.Error())
+			return nil, err
 		}
 
-		if cfgFile != nil {
-			err = cfgFile.Parse(config)
-			if err != nil {
-				log.Fatal(err.Error())
-			}
+		dataDir := os.Getenv("DATA_DIR")
+		if dataDir != "" {
+			config.DataDir = dataDir
 		}
-
-		// todo: config validation
 
 		networkManager, err := network.NewManager(&config.Network)
 		if err != nil {
