@@ -42,7 +42,7 @@ func loadConfigFile(configFilePath string) (*params.NodeConfig, error) {
 	}
 
 	// check if DATA_DIR is set in env, if yes then override value from config file
-	dataDir := os.Getenv("DATA_DIR")
+	dataDir := os.Getenv("BN_DATA_DIR")
 	if dataDir != "" {
 		config.DataDir = dataDir
 	}

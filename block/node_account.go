@@ -55,7 +55,7 @@ func NewNodeAccount() (*NodeAccount, error) {
 		nodeAccountLock.Lock()
 		defer nodeAccountLock.Unlock()
 
-		nodePrivateKey := os.Getenv("NODE_PRIVATE_KEY")
+		nodePrivateKey := os.Getenv("BN_NODE_PRIVATE_KEY")
 		if nodePrivateKey == "" {
 			return nil, ErrNodePrivateKeyMissing
 		}

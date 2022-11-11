@@ -70,7 +70,7 @@ func CreateWallet() (Wallet, error) {
 
 func ImportWallet(privateKey string) (Wallet, error) {
 	if privateKey[0:2] == "0x" {
-		privateKey = privateKey[2:len(privateKey)]
+		privateKey = privateKey[2:]
 	}
 
 	privateKeyECDSA, err := crypto.HexToECDSA(privateKey)

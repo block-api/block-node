@@ -56,7 +56,7 @@ func NewNode() (*Node, error) {
 		_ = godotenv.Load()
 
 		// load config file
-		configFilePath := os.Getenv("CONFIG_FILE")
+		configFilePath := os.Getenv("BN_CONFIG_FILE")
 		config, err := loadConfigFile(configFilePath)
 		if err != nil {
 			return nil, err

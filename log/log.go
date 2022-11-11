@@ -93,7 +93,7 @@ func New(message string, logType Type) {
 	case TypeDebug:
 		log.Type = TypeDebug
 
-		if os.Getenv("DEBUG") == "true" {
+		if os.Getenv("BN_DEBUG") == "true" {
 			c := color.New(color.FgBlue)
 			_, _ = c.Println(log.String())
 		}
