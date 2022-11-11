@@ -20,6 +20,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/block-api/block-node/db"
 	"github.com/block-api/block-node/log"
 	"github.com/block-api/block-node/network"
 	"github.com/block-api/block-node/params"
@@ -42,6 +43,7 @@ type Node struct {
 	id             string
 	config         *params.NodeConfig
 	account        *NodeAccount
+	database       *db.Manager
 	networkManager *network.Manager
 	cStop          chan int
 	wgNodeWorker   *sync.WaitGroup

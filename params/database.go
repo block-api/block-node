@@ -15,4 +15,7 @@
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
 package params
 
+const Dbd = ""
+
+// DatabaseConfig describes parameters available for databases
 type DatabaseConfig struct{}

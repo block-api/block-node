@@ -47,5 +47,13 @@ func loadConfigFile(configFilePath string) (*params.NodeConfig, error) {
 		config.DataDir = dataDir
 	}
 
+	if config.Network.HeartbeatInterval < 1 {
+		config.Network.HeartbeatInterval = params.DefaultNetworkHeartbeatInterval
+	}
+
+	if config.Network.ActionTimeout < 1 {
+		config.Network.ActionTimeout = params.DefaultNetworkActionTimeout
+	}
+
 	return config, nil
 }

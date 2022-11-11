@@ -11,6 +11,10 @@ network:
   delivery: "random"
   # transport type: tcp / redis
   transport: "tcp"
+  # how often nodes should announce their presence to the network
+  heartbeat_interval: 5
+  # how long node should wait for response from other node/s before timing out the request
+  action_timeout: 15
   # selected transport setting
   settings:
     public_host: "localhost"

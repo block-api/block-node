@@ -16,104 +16,97 @@
 package db
 
 import (
-	"database/sql"
-	"os"
 	"sync"
 
-	"github.com/block-api/block-node/log"
 	"github.com/block-api/block-node/params"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/syndtr/goleveldb/leveldb"
-	"github.com/syndtr/goleveldb/leveldb/filter"
-	"github.com/syndtr/goleveldb/leveldb/opt"
 )
 
 var lock = new(sync.Mutex)
-var database *Database
+var manager *Manager
 
-type Database struct {
+type Manager struct {
 	config  *params.DatabaseConfig
 	leveldb map[string]*leveldb.DB
 	sqlite  map[string]*SQLite
 }
 
-// NewDatabase creates new database struct
-
-func NewDatabase(config *params.DatabaseConfig) *Database {
-	if database == nil {
+// NewManager creates new Manager struct
+func NewManager(config *params.DatabaseConfig) *Manager {
+	if manager == nil {
 		lock.Lock()
 		defer lock.Unlock()
 
-		database = &Database{
+		manager = &Manager{
 			config:  config,
 			leveldb: make(map[string]*leveldb.DB),
 			sqlite:  make(map[string]*SQLite),
 		}
 
-		var err error
+		// var err error
+		// if len(config.LevelDB) > 0 {
+		// 	for dbName, dbConfig := range config.LevelDB {
+		// 		o := &opt.Options{
+		// 			WriteBuffer: dbConfig.WriteBufferSize * opt.MiB,
+		// 			Filter:      filter.NewBloomFilter(10),
+		// 		}
 
-		if len(config.LevelDB) > 0 {
-			for dbName, dbConfig := range config.LevelDB {
-				o := &opt.Options{
-					WriteBuffer: dbConfig.WriteBufferSize * opt.MiB,
-					Filter:      filter.NewBloomFilter(10),
-				}
+		// 		manager.leveldb[dbName], err = leveldb.OpenFile(dbConfig.DbPath, o)
 
-				database.leveldb[dbName], err = leveldb.OpenFile(dbConfig.DbPath, o)
+		// 		if err != nil {
+		// 			panic(err)
+		// 		}
 
-				if err != nil {
-					panic(err)
-				}
+		// 		log.Debug("database " + dbName + ": " + dbConfig.DbPath)
+		// 	}
+		// }
 
-				log.Debug("database " + dbName + ": " + dbConfig.DbPath)
-			}
-		}
+		// if len(config.SQLite) > 0 {
+		// 	for dbName, dbConfig := range config.SQLite {
+		// 		if _, err := os.Stat(dbConfig.DbPath); err != nil {
+		// 			file, err := os.Create(dbConfig.DbPath)
+		// 			if err != nil {
+		// 				log.Panic(err.Error())
+		// 			}
+		// 			_ = file.Close()
+		// 		}
 
-		if len(config.SQLite) > 0 {
-			for dbName, dbConfig := range config.SQLite {
-				if _, err := os.Stat(dbConfig.DbPath); err != nil {
-					file, err := os.Create(dbConfig.DbPath)
-					if err != nil {
-						log.Panic(err.Error())
-					}
-					_ = file.Close()
-				}
+		// 		s3db, err := sql.Open("sqlite3", "file:"+dbConfig.DbPath+"?"+dbConfig.Options)
+		// 		if err != nil {
+		// 			log.Panic(err.Error())
+		// 		}
 
-				s3db, err := sql.Open("sqlite3", "file:"+dbConfig.DbPath+"?"+dbConfig.Options)
-				if err != nil {
-					log.Panic(err.Error())
-				}
+		// 		err = s3db.Ping()
+		// 		if err != nil {
+		// 			log.Panic(err.Error())
+		// 		}
 
-				err = s3db.Ping()
-				if err != nil {
-					log.Panic(err.Error())
-				}
+		// 		manager.sqlite[dbName] = &SQLite{
+		// 			Db: s3db,
+		// 		}
 
-				database.sqlite[dbName] = &SQLite{
-					Db: s3db,
-				}
+		// 		if dbConfig.MaxOpenConnections > 0 {
+		// 			manager.sqlite[dbName].Db.SetMaxOpenConns(dbConfig.MaxOpenConnections)
+		// 		}
 
-				if dbConfig.MaxOpenConnections > 0 {
-					database.sqlite[dbName].Db.SetMaxOpenConns(dbConfig.MaxOpenConnections)
-				}
+		// 		if _, err := manager.sqlite[dbName].Db.Exec(CreateMigrationTable); err != nil {
+		// 			log.Panic(err.Error())
+		// 		}
 
-				if _, err := database.sqlite[dbName].Db.Exec(CreateMigrationTable); err != nil {
-					log.Panic(err.Error())
-				}
-
-				log.Debug("database " + dbName + ": " + dbConfig.DbPath)
-			}
-		}
+		// 		log.Debug("database " + dbName + ": " + dbConfig.DbPath)
+		// 	}
+		// }
 	}
 
-	return database
+	return manager
 }
 
-func GetDatabase() *Database {
-	return database
+func GetDatabase() *Manager {
+	return manager
 }
 
-func (db *Database) RunMigrations() error {
+func (db *Manager) RunMigrations() error {
 	for _, dbSQLite := range db.sqlite {
 		err := dbSQLite.RunMigrations()
 		if err != nil {
@@ -124,7 +117,7 @@ func (db *Database) RunMigrations() error {
 	return nil
 }
 
-func (db *Database) RevertMigrations() error {
+func (db *Manager) RevertMigrations() error {
 	for _, dbSQLite := range db.sqlite {
 		err := dbSQLite.RevertMigrations()
 		if err != nil {
@@ -135,10 +128,10 @@ func (db *Database) RevertMigrations() error {
 	return nil
 }
 
-func (db *Database) GetLevelDB(name string) *leveldb.DB {
+func (db *Manager) GetLevelDB(name string) *leveldb.DB {
 	return db.leveldb[name]
 }
 
-func (db *Database) GetSQLite(name string) *SQLite {
+func (db *Manager) GetSQLite(name string) *SQLite {
 	return db.sqlite[name]
 }
