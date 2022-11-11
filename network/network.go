@@ -17,7 +17,6 @@ package network
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 
 	"github.com/block-api/block-node/block/function"
@@ -53,8 +52,6 @@ func NewManager(config *params.NetworkConfig, functionManager *function.Manager)
 	return nil, ErrAlreadyInstantiatied
 }
 
-func (m *Manager) GetFunction(name string) {
-	fnStatus, _ := m.functionManager.Get("sys.status")
-	fnStatus(nil, nil)
-	fmt.Println(fnStatus)
+func (m *Manager) GetFunction(name string) (function.Handler, error) {
+	return m.functionManager.Get("sys.status")
 }

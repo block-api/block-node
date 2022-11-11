@@ -13,18 +13,4 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
-package function
-
-import (
-	"github.com/block-api/block-node/log"
-)
-
-type SysStatusResponse struct {
-}
-
-func SysStatusFunction(req *Request, res *Response) (*Response, error) {
-	log.Warning("-- SysStatusFunction --")
-
-	res.Body = "response from SysStatusFunction"
-	return res, nil
-}
+package network
