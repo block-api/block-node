@@ -18,21 +18,23 @@ package db
 import (
 	"database/sql"
 	"time"
+
+	"github.com/block-api/block-node/db/sqlite"
 )
 
 // SQLite struct definition
 type SQLite struct {
-	Db         *sql.DB
-	migrations []SQLMigration
+	DB         *sql.DB
+	migrations []sqlite.SQLMigration
 }
 
 // Migrations return migrations array
-func (s *SQLite) Migrations() []SQLMigration {
+func (s *SQLite) Migrations() []sqlite.SQLMigration {
 	return s.migrations
 }
 
 // AddMigration adds SQLMigration to migrations, can pass array of migrations
-func (s *SQLite) AddMigration(migration ...SQLMigration) {
+func (s *SQLite) AddMigration(migration ...sqlite.SQLMigration) {
 	s.migrations = append(s.migrations, migration...)
 }
 
@@ -43,7 +45,7 @@ func (s *SQLite) RunMigrations() error {
 	}
 
 	for _, migration := range s.migrations {
-		row := s.Db.QueryRow(FindMigrationEntry, migration.name)
+		row := s.DB.QueryRow(sqlite.FindMigrationEntry, migration.Name)
 		if row.Err() != nil {
 			return row.Err()
 		}
@@ -54,11 +56,11 @@ func (s *SQLite) RunMigrations() error {
 			continue
 		}
 
-		if _, err := s.Db.Exec(migration.upQuery); err != nil {
+		if _, err := s.DB.Exec(migration.UpQuery); err != nil {
 			return err
 		}
 
-		_, err := s.Db.Exec(NewMigrationEntry, migration.name, time.Now().Unix())
+		_, err := s.DB.Exec(sqlite.NewMigrationEntry, migration.Name, time.Now().Unix())
 		if err != nil {
 			return err
 		}
@@ -75,11 +77,11 @@ func (s *SQLite) RevertMigrations() error {
 	}
 
 	for i := len(s.migrations) - 1; i >= 0; i-- {
-		if _, err := s.Db.Exec(s.migrations[i].downQuery); err != nil {
+		if _, err := s.DB.Exec(s.migrations[i].DownQuery); err != nil {
 			return err
 		}
 
-		if _, err := s.Db.Exec(DeleteMigrationEntry, s.migrations[i].name); err != nil {
+		if _, err := s.DB.Exec(sqlite.DeleteMigrationEntry, s.migrations[i].Name); err != nil {
 			return err
 		}
 	}

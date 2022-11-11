@@ -21,10 +21,10 @@ const DefaultDataDir = "/usr/local/block-node"
 // NodeConfig block node configuration options
 // these can be set in config file
 type NodeConfig struct {
-	Debug    bool           `yaml:"debug"`
-	Name     string         `yaml:"name"`
-	Version  int            `yaml:"version"`
-	DataDir  string         `yaml:"data_dir"`
-	Network  NetworkConfig  `yaml:"network"`
-	Database DatabaseConfig `yaml:"database"`
+	Debug    bool            `yaml:"debug"`
+	Name     string          `yaml:"name"`
+	Version  int             `yaml:"version"`
+	DataDir  string          `yaml:"data_dir"`
+	Network  NetworkConfig   `yaml:"network"`
+	Database DatabasesConfig `yaml:"database"`
 }

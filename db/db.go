@@ -16,94 +16,175 @@
 package db
 
 import (
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"os"
 	"sync"
 
+	"github.com/block-api/block-node/common/types"
+	"github.com/block-api/block-node/db/sqlite"
 	"github.com/block-api/block-node/params"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/syndtr/goleveldb/leveldb/filter"
+	"github.com/syndtr/goleveldb/leveldb/opt"
+)
+
+var (
+	ErrDbManagerInstantiated = errors.New("database manager is alredy instantiated")
+	ErrDbNameExist           = errors.New("database with provided name already exist")
 )
 
 var lock = new(sync.Mutex)
 var manager *Manager
 
 type Manager struct {
-	config  *params.DatabaseConfig
-	leveldb map[string]*leveldb.DB
-	sqlite  map[string]*SQLite
+	config    *params.NodeConfig
+	databases map[string]bool
+	leveldb   map[string]*LevelDB
+	sqlite    map[string]*SQLite
 }
 
 // NewManager creates new Manager struct
-func NewManager(config *params.DatabaseConfig) *Manager {
+func NewManager(config *params.NodeConfig) (*Manager, error) {
 	if manager == nil {
 		lock.Lock()
 		defer lock.Unlock()
 
 		manager = &Manager{
-			config:  config,
-			leveldb: make(map[string]*leveldb.DB),
-			sqlite:  make(map[string]*SQLite),
+			config:    config,
+			databases: make(map[string]bool),
+			leveldb:   make(map[string]*LevelDB),
+			sqlite:    make(map[string]*SQLite),
 		}
 
-		// var err error
-		// if len(config.LevelDB) > 0 {
-		// 	for dbName, dbConfig := range config.LevelDB {
-		// 		o := &opt.Options{
-		// 			WriteBuffer: dbConfig.WriteBufferSize * opt.MiB,
-		// 			Filter:      filter.NewBloomFilter(10),
-		// 		}
+		err := manager.startSysDatabases()
+		if err != nil {
+			return nil, err
+		}
 
-		// 		manager.leveldb[dbName], err = leveldb.OpenFile(dbConfig.DbPath, o)
+		for dbName, dbConfig := range config.Database {
+			if manager.databases[dbName] {
+				return nil, ErrDbNameExist
+			}
 
-		// 		if err != nil {
-		// 			panic(err)
-		// 		}
+			settingsBytes, err := json.Marshal(dbConfig.Settings)
+			if err != nil {
+				return nil, err
+			}
 
-		// 		log.Debug("database " + dbName + ": " + dbConfig.DbPath)
-		// 	}
-		// }
+			if dbConfig.Type == types.DbLevelDB {
+				var dbSettings params.DatabaseLevelDBConfig
 
-		// if len(config.SQLite) > 0 {
-		// 	for dbName, dbConfig := range config.SQLite {
-		// 		if _, err := os.Stat(dbConfig.DbPath); err != nil {
-		// 			file, err := os.Create(dbConfig.DbPath)
-		// 			if err != nil {
-		// 				log.Panic(err.Error())
-		// 			}
-		// 			_ = file.Close()
-		// 		}
+				err := json.Unmarshal(settingsBytes, &dbSettings)
+				if err != nil {
+					return nil, err
+				}
 
-		// 		s3db, err := sql.Open("sqlite3", "file:"+dbConfig.DbPath+"?"+dbConfig.Options)
-		// 		if err != nil {
-		// 			log.Panic(err.Error())
-		// 		}
+				options := &opt.Options{
+					WriteBuffer: dbSettings.WriteBufferSize * opt.MiB,
+					Filter:      filter.NewBloomFilter(10),
+				}
 
-		// 		err = s3db.Ping()
-		// 		if err != nil {
-		// 			log.Panic(err.Error())
-		// 		}
+				dbInstance, err := leveldb.OpenFile(config.DataDir+params.DBDir+dbName, options)
+				if err != nil {
+					return nil, err
+				}
 
-		// 		manager.sqlite[dbName] = &SQLite{
-		// 			Db: s3db,
-		// 		}
+				manager.leveldb[dbName] = &LevelDB{
+					DB: dbInstance,
+				}
+				manager.databases[dbName] = true
 
-		// 		if dbConfig.MaxOpenConnections > 0 {
-		// 			manager.sqlite[dbName].Db.SetMaxOpenConns(dbConfig.MaxOpenConnections)
-		// 		}
+				continue
+			}
 
-		// 		if _, err := manager.sqlite[dbName].Db.Exec(CreateMigrationTable); err != nil {
-		// 			log.Panic(err.Error())
-		// 		}
+			if dbConfig.Type == types.DbSqlite {
+				var dbSettings params.DatabaseSqliteConfig
 
-		// 		log.Debug("database " + dbName + ": " + dbConfig.DbPath)
-		// 	}
-		// }
+				err := json.Unmarshal(settingsBytes, &dbSettings)
+				if err != nil {
+					return nil, err
+				}
+
+				dbPath := config.DataDir + params.DBDir + dbName + ".sqlite"
+				if _, err := os.Stat(dbPath); err != nil {
+					file, err := os.Create(dbPath)
+					if err != nil {
+						return nil, err
+					}
+
+					err = file.Close()
+					if err != nil {
+						return nil, err
+					}
+				}
+
+				dbInstance, err := sql.Open("sqlite3", "file:"+dbPath+"?"+dbSettings.Options)
+				if err != nil {
+					return nil, err
+				}
+
+				err = dbInstance.Ping()
+				if err != nil {
+					return nil, err
+				}
+
+				manager.sqlite[dbName] = &SQLite{
+					DB:         dbInstance,
+					migrations: make([]sqlite.SQLMigration, 0),
+				}
+				manager.databases[dbName] = true
+
+				if dbSettings.MaxOpenConnections > 0 {
+					manager.sqlite[dbName].DB.SetMaxOpenConns(dbSettings.MaxOpenConnections)
+				}
+
+				if _, err := manager.sqlite[dbName].DB.Exec(sqlite.CreateMigrationTable); err != nil {
+					return nil, err
+				}
+
+				manager.databases[dbName] = true
+
+				continue
+			}
+		}
+
+		return manager, nil
 	}
+	return nil, ErrDbManagerInstantiated
+}
 
+func GetManager() *Manager {
 	return manager
 }
 
-func GetDatabase() *Manager {
-	return manager
+func (db *Manager) startSysDatabases() error {
+	if db.databases[params.DBSysKnownNodes] || db.databases[params.DBSys] {
+		return ErrDbNameExist
+	}
+
+	dbSys, err := leveldb.OpenFile(db.config.DataDir+params.DBDir+params.DBSys, nil)
+	if err != nil {
+		return err
+	}
+	db.databases[params.DBSys] = true
+	db.leveldb[params.DBSys] = &LevelDB{
+		DB: dbSys,
+	}
+
+	dbKnownNodes, err := leveldb.OpenFile(db.config.DataDir+params.DBDir+params.DBSysKnownNodes, nil)
+	if err != nil {
+		return err
+	}
+
+	db.databases[params.DBSysKnownNodes] = true
+	db.leveldb[params.DBSysKnownNodes] = &LevelDB{
+		DB: dbKnownNodes,
+	}
+
+	return nil
 }
 
 func (db *Manager) RunMigrations() error {
@@ -128,7 +209,7 @@ func (db *Manager) RevertMigrations() error {
 	return nil
 }
 
-func (db *Manager) GetLevelDB(name string) *leveldb.DB {
+func (db *Manager) GetLevelDB(name string) *LevelDB {
 	return db.leveldb[name]
 }
 

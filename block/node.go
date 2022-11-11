@@ -40,13 +40,13 @@ var (
 // Node is main struct describing node
 type Node struct {
 	// id is unique identifier for node instance - node account wallet address
-	id             string
-	config         *params.NodeConfig
-	account        *NodeAccount
-	database       *db.Manager
-	networkManager *network.Manager
-	cStop          chan int
-	wgNodeWorker   *sync.WaitGroup
+	id              string
+	config          *params.NodeConfig
+	account         *NodeAccount
+	databaseManager *db.Manager
+	networkManager  *network.Manager
+	cStop           chan int
+	wgNodeWorker    *sync.WaitGroup
 }
 
 // New creates new node instance, there can be only one instance of node in your program
@@ -64,23 +64,29 @@ func NewNode() (*Node, error) {
 			return nil, err
 		}
 
+		databaseManager, err := db.NewManager(config)
+		if err != nil {
+			return nil, err
+		}
+
 		networkManager, err := network.NewManager(&config.Network)
 		if err != nil {
-			log.Fatal(err.Error())
+			return nil, err
 		}
 
 		account, err := NewNodeAccount()
 		if err != nil {
-			log.Fatal(err.Error())
+			return nil, err
 		}
 
 		node = &Node{
-			id:             account.wallet.Address.String(),
-			config:         config,
-			account:        account,
-			networkManager: networkManager,
-			cStop:          make(chan int),
-			wgNodeWorker:   new(sync.WaitGroup),
+			id:              account.wallet.Address.String(),
+			config:          config,
+			account:         account,
+			databaseManager: databaseManager,
+			networkManager:  networkManager,
+			cStop:           make(chan int),
+			wgNodeWorker:    new(sync.WaitGroup),
 		}
 
 		return node, nil

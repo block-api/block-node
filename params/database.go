@@ -15,7 +15,40 @@
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
 package params
 
-const Dbd = ""
+import "github.com/block-api/block-node/common/types"
 
-// DatabaseConfig describes parameters available for databases
-type DatabaseConfig struct{}
+// DbDir is a directory inside dataDir (from config file) directory
+// where databases data will be kept
+
+const DBDir = "/db/"
+
+// DbNamePrefix prefix for internal databases name
+const DBNamePrefix = "bn_"
+
+// DbSys block node internal db
+const DBSys = DBNamePrefix + "sys"
+
+// DbSysKnownNodes name of internal database where system keeps
+// informations about network topology
+const DBSysKnownNodes = DBNamePrefix + "sys_known_nodes"
+
+// DatabasesConfig describes parameters available for databases
+type DatabasesConfig map[string]DatabaseConfig
+
+// DatabaseConfig describes single db config options
+type DatabaseConfig struct {
+	Type     types.DBType `json:"type"`
+	Settings any          `json:"settings"`
+}
+
+// DatabaseLevelDBConfig settings for LevelDB database
+type DatabaseLevelDBConfig struct {
+	WriteBufferSize int `json:"write_buffer_size"`
+}
+
+// DatabaseSqliteConfig settings for Sqlite database
+type DatabaseSqliteConfig struct {
+	Path               string `json:"path"`
+	Options            string `json:"options"`
+	MaxOpenConnections int    `json:"max_open_connections"`
+}

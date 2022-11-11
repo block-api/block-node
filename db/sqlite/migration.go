@@ -13,28 +13,37 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
-package types
+package sqlite
 
-import "errors"
+const CreateMigrationTable string = `
+	CREATE TABLE IF NOT EXISTS migration (
+		name TEXT NOT NULL PRIMARY KEY,
+		created_at INTEGER NOT NULL
+	);
+`
 
-var (
-	ErrInvalidTargetAction = errors.New("invalid target action")
-)
+const NewMigrationEntry string = `
+	INSERT INTO migration (name, created_at) VALUES (?, ?)
+`
 
-type (
-	NodeID    string
-	Hash      []byte
-	Sig       []byte
-	Timestamp int64
-	Bytes     []byte
-	DBType    string
-)
+const FindMigrationEntry string = `
+	SELECT name FROM migration WHERE name = ?
+`
 
-const (
-	DbLevelDB DBType = "leveldb"
-	DbSqlite  DBType = "sqlite"
-)
+const DeleteMigrationEntry string = `
+	DELETE FROM migration WHERE name = ?
+`
 
-func (n NodeID) String() string {
-	return string(n)
+type SQLMigration struct {
+	Name      string
+	UpQuery   string
+	DownQuery string
+}
+
+func NewSQLMigration(name string, upQuery string, downQuery string) SQLMigration {
+	return SQLMigration{
+		Name:      name,
+		UpQuery:   upQuery,
+		DownQuery: downQuery,
+	}
 }
