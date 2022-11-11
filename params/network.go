@@ -15,7 +15,11 @@
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
 package params
 
-import "github.com/block-api/block-node/network/transport"
+import (
+	"encoding/json"
+
+	"github.com/block-api/block-node/network/transport"
+)
 
 // DefaultNetworkTransport default transport method used by block node network module
 const DefaultNetworkTransport = transport.TCP
@@ -38,7 +42,32 @@ const DefaultNetworkHeartbeatInterval int = 5
 
 // NetworkConfig describs configuration options for network
 type NetworkConfig struct {
-	HeartbeatInterval int                     `yaml:"heartbeat_interval"`
-	ActionTimeout     int                     `yaml:"action_timeout"`
-	Transport         transport.TransportType `yaml:"transport"`
+	HeartbeatInterval int            `yaml:"heartbeat_interval"`
+	ActionTimeout     int            `yaml:"action_timeout"`
+	Transport         transport.Type `yaml:"transport"`
+	Settings          any            `yaml:"settings"`
+}
+
+type NetworkTCPSettings struct {
+	PublicHost string `yaml:"public_host"`
+	PublicPort string `yaml:"public_port"`
+	BindHost   string `yaml:"bind_host"`
+	BindPort   string `yaml:"bind_port"`
+}
+type NetworkRedisSettings struct{}
+
+func GetNetworkSettings[T NetworkTCPSettings | NetworkRedisSettings](config *NetworkConfig) (*T, error) {
+	settingsBytes, err := json.Marshal(config.Settings)
+	if err != nil {
+		return nil, err
+	}
+
+	var settings T
+
+	err = json.Unmarshal(settingsBytes, &settings)
+	if err != nil {
+		return nil, err
+	}
+
+	return &settings, nil
 }

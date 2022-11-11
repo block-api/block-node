@@ -15,7 +15,7 @@ network:
   heartbeat_interval: 5
   # how long node should wait for response from other node/s before timing out the request
   action_timeout: 15
-  # selected transport setting
+  # selected transport settings
   settings:
     public_host: "localhost"
     public_port: "8090"

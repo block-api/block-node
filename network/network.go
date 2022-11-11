@@ -32,8 +32,16 @@ var manager *Manager
 var managerLock = new(sync.Mutex)
 
 type Manager struct {
-	config          *params.NetworkConfig
-	functionManager *function.Manager
+	config               *params.NetworkConfig
+	functionManager      *function.Manager
+	router               *Router
+	cStopNetworkWorker   chan int
+	cStopSenderkWorker   chan int
+	cStopReceiverkWorker chan int
+	cSend                chan Packet
+	cReceive             chan Packet
+	wgStop               *sync.WaitGroup
+	cSendLock            *sync.Mutex
 }
 
 func NewManager(config *params.NetworkConfig, functionManager *function.Manager) (*Manager, error) {
@@ -42,8 +50,16 @@ func NewManager(config *params.NetworkConfig, functionManager *function.Manager)
 		defer managerLock.Unlock()
 
 		manager = &Manager{
-			config:          config,
-			functionManager: functionManager,
+			config:               config,
+			functionManager:      functionManager,
+			router:               NewRouter(config),
+			cStopNetworkWorker:   make(chan int),
+			cStopSenderkWorker:   make(chan int),
+			cStopReceiverkWorker: make(chan int),
+			cSend:                make(chan Packet, 10),
+			cReceive:             make(chan Packet),
+			wgStop:               new(sync.WaitGroup),
+			cSendLock:            new(sync.Mutex),
 		}
 
 		return manager, nil
@@ -52,6 +68,50 @@ func NewManager(config *params.NetworkConfig, functionManager *function.Manager)
 	return nil, ErrAlreadyInstantiatied
 }
 
+func GetManager() *Manager {
+	return manager
+}
+
+func (m *Manager) Start() error {
+	m.wgStop.Add(1)
+
+	go m.networkWorker(m.cStopNetworkWorker, m.wgStop)
+
+	m.wgStop.Add(1)
+
+	go m.senderWorker(m.cStopSenderkWorker, m.cSend, m.wgStop)
+
+	m.wgStop.Add(1)
+
+	go m.receiverWorker(m.cStopReceiverkWorker, m.cReceive, m.wgStop)
+
+	return nil
+}
+
+func (m *Manager) Stop() error {
+
+	m.cStopSenderkWorker <- 1
+	m.cStopReceiverkWorker <- 1
+	m.cStopNetworkWorker <- 1
+
+	m.wgStop.Wait()
+
+	return nil
+}
+
 func (m *Manager) GetFunction(name string) (function.Handler, error) {
-	return m.functionManager.Get("sys.status")
+	return m.functionManager.Get(name)
+}
+
+func (n *Manager) Send(packet Packet) error {
+	err := packet.Validate()
+	if err != nil {
+		return err
+	}
+
+	n.cSendLock.Lock()
+	n.cSend <- packet
+	n.cSendLock.Unlock()
+
+	return nil
 }

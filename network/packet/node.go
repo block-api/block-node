@@ -13,13 +13,13 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
-package transport
+package packet
 
-type (
-	Type string
-)
+import "github.com/block-api/block-node/network/transport"
 
-const (
-	TCP   Type = "tcp"
-	REDIS Type = "redis"
-)
+type Node struct {
+	Transport  transport.Type `yaml:"transport" json:"t"`
+	NodeID     string         `yaml:"node_id" json:"nid"`
+	PublicHost string         `yaml:"public_host" json:"ph"`
+	PublicPort string         `yaml:"public_port" json:"pp"`
+}

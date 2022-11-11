@@ -13,13 +13,11 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
-package transport
+package packet
 
-type (
-	Type string
-)
+type Type string
 
 const (
-	TCP   Type = "tcp"
-	REDIS Type = "redis"
+	Heartbeat Type = "hbt"
+	Cmd       Type = "cmd"
 )

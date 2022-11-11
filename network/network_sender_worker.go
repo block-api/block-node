@@ -13,13 +13,36 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
-package transport
+package network
 
-type (
-	Type string
+import (
+	"fmt"
+	"sync"
+
+	"github.com/block-api/block-node/log"
 )
 
-const (
-	TCP   Type = "tcp"
-	REDIS Type = "redis"
-)
+func (m *Manager) senderWorker(cStop <-chan int, cSend <-chan Packet, wgStop *sync.WaitGroup) {
+	log.Debug("network::sender_worker::start")
+L:
+	for {
+		select {
+		case <-cStop:
+			log.Debug("network::sender_worker::stop")
+			wgStop.Done()
+			break L
+		case packet := <-cSend:
+			log.Debug("network::sender_worker::received_packet")
+			fmt.Println(packet)
+			fmt.Println("-- send packet --")
+
+			go sendPacketWorker(packet)
+
+			continue
+		}
+	}
+}
+
+func sendPacketWorker(packet Packet) {
+	log.Debug("network::send_packet_worker::start")
+}

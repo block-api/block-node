@@ -13,13 +13,35 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
-package transport
+package network
 
-type (
-	Type string
+import (
+	"sync"
+
+	"github.com/block-api/block-node/network/router"
+	"github.com/block-api/block-node/params"
 )
 
-const (
-	TCP   Type = "tcp"
-	REDIS Type = "redis"
-)
+// knownNodesMaxSize max map in memory size to keep information about topology of known nodes
+// it will try to find in memory, then in database
+const knownNodesMaxSize = 50
+
+type Router struct {
+	config            *params.NetworkConfig
+	knownNodes        map[string]router.Node
+	knownNodesCounter int
+	knownNodesLock    *sync.Mutex
+}
+
+func NewRouter(config *params.NetworkConfig) *Router {
+	return &Router{
+		config:            config,
+		knownNodes:        make(map[string]router.Node),
+		knownNodesCounter: 0,
+		knownNodesLock:    new(sync.Mutex),
+	}
+}
+
+func (r *Router) KnownNodes() *map[string]router.Node {
+	return &r.knownNodes
+}

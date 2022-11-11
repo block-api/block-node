@@ -13,13 +13,14 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
-package transport
+package packet
 
-type (
-	Type string
-)
+import "github.com/block-api/block-node/network/transport"
 
-const (
-	TCP   Type = "tcp"
-	REDIS Type = "redis"
-)
+type HeartbeatBody struct {
+	NodeID     string          `json:"nid,omitempty"`
+	Transport  transport.Type  `json:"tt"`
+	PublicHost string          `json:"ph"`
+	PublicPort string          `json:"pp"`
+	KnownNodes map[string]Node `json:"kn,omitempty"`
+}

@@ -19,8 +19,10 @@ import (
 	"time"
 
 	"github.com/block-api/block-node/log"
+	"github.com/block-api/block-node/network"
 )
 
+// , cSend chan<- network.Packet
 func nodeWorker(n *Node) {
 	var ticker = time.NewTicker(time.Second * 5)
 
@@ -29,6 +31,12 @@ L:
 		select {
 		case <-ticker.C:
 			log.Warning("nodeWorker ticker")
+
+			// n.networkManager.GetFunction("sys.status")
+
+			heartbeat := network.NewHeartbeat(&n.config.Network, n.id, "", "")
+			n.networkManager.Send(heartbeat)
+
 			continue
 		case <-n.cStop:
 			// stop program
@@ -39,5 +47,5 @@ L:
 
 	n.wgNodeWorker.Done()
 
-	log.Debug("nodeWorker stopped")
+	log.Debug("node::node_worker::stop")
 }

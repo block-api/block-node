@@ -122,6 +122,8 @@ func (n *Node) FunctionManager() *function.Manager {
 func (n *Node) Stop() {
 	n.cStop <- 1
 
+	n.networkManager.Stop()
+
 	n.wgNodeWorker.Wait()
 
 	log.Debug("node stopped")
@@ -132,4 +134,6 @@ func (n *Node) Start() {
 	n.wgNodeWorker.Add(1)
 
 	go nodeWorker(n)
+
+	n.networkManager.Start()
 }
