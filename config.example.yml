@@ -27,21 +27,17 @@ network:
       public_host: "localhost"
       public_port: "8090"
 # -- database settings ---
+# you can define LevelDB or SQLite databases
+# database names must be unique
+# there are different settings available depending on the chosen database
+# for more info read documentation
 database:
-  # size in MB
-  memory_cache: 128
-  default:
+  myFirstDb:
+    type: "leveldb"
+    settings:
+      write_buffer_size: 10 # in MB
+  mySecondDb:
     type: "sqlite"
-    path: "/db_default.sqlite"
-    options: "cache=shared&mode=rw"
-    maxOpenConnections: 1
-  # sys_cache:
-  #   type: "leveldb"
-  #   settings:
-  #     path: "/var/block-node/data/db_sys_cache"
-  # sys_internal:
-  #   type: "sqlite"
-  #   settings:
-  #     path: "/var/block-node/data/db_sys_internal.sqlite"
-  #     options: "cache=shared&mode=rw"
-  #     maxOpenConnections: 1
+    settings:
+      options: "cache=shared&mode=rw"
+      maxOpenConnections: 1
