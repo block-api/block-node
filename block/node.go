@@ -20,6 +20,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/block-api/block-node/block/function"
 	"github.com/block-api/block-node/db"
 	"github.com/block-api/block-node/log"
 	"github.com/block-api/block-node/network"
@@ -45,6 +46,7 @@ type Node struct {
 	account         *NodeAccount
 	databaseManager *db.Manager
 	networkManager  *network.Manager
+	functionManager *function.Manager
 	cStop           chan int
 	wgNodeWorker    *sync.WaitGroup
 }
@@ -69,7 +71,8 @@ func NewNode() (*Node, error) {
 			return nil, err
 		}
 
-		networkManager, err := network.NewManager(&config.Network)
+		functionManager := function.NewManager()
+		networkManager, err := network.NewManager(&config.Network, functionManager)
 		if err != nil {
 			return nil, err
 		}
@@ -85,6 +88,7 @@ func NewNode() (*Node, error) {
 			account:         account,
 			databaseManager: databaseManager,
 			networkManager:  networkManager,
+			functionManager: functionManager,
 			cStop:           make(chan int),
 			wgNodeWorker:    new(sync.WaitGroup),
 		}
@@ -107,6 +111,11 @@ func (n *Node) ID() string {
 // Config returns pointer to NodeConfig
 func (n *Node) Config() *params.NodeConfig {
 	return n.config
+}
+
+// FunctionManager returns FunctionManager
+func (n *Node) FunctionManager() *function.Manager {
+	return n.functionManager
 }
 
 // Stop sends information to cStop channel to stop program

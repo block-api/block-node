@@ -13,30 +13,8 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
-package types
+package function
 
-import (
-	"errors"
-)
-
-var (
-	ErrInvalidTargetAction = errors.New("invalid target action")
-)
-
-type (
-	NodeID    string
-	Hash      []byte
-	Sig       []byte
-	Timestamp int64
-	Bytes     []byte
-	DBType    string
-)
-
-const (
-	DbLevelDB DBType = "leveldb"
-	DbSqlite  DBType = "sqlite"
-)
-
-func (n NodeID) String() string {
-	return string(n)
+type Request struct {
+	Body any `json:"b"`
 }

@@ -17,8 +17,10 @@ package network
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 
+	"github.com/block-api/block-node/block/function"
 	"github.com/block-api/block-node/params"
 )
 
@@ -31,20 +33,28 @@ var manager *Manager
 var managerLock = new(sync.Mutex)
 
 type Manager struct {
-	config *params.NetworkConfig
+	config          *params.NetworkConfig
+	functionManager *function.Manager
 }
 
-func NewManager(config *params.NetworkConfig) (*Manager, error) {
+func NewManager(config *params.NetworkConfig, functionManager *function.Manager) (*Manager, error) {
 	if manager == nil {
 		managerLock.Lock()
 		defer managerLock.Unlock()
 
 		manager = &Manager{
-			config: config,
+			config:          config,
+			functionManager: functionManager,
 		}
 
 		return manager, nil
 	}
 
 	return nil, ErrAlreadyInstantiatied
+}
+
+func (m *Manager) GetFunction(name string) {
+	fnStatus, _ := m.functionManager.Get("sys.status")
+	fnStatus(nil, nil)
+	fmt.Println(fnStatus)
 }

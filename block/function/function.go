@@ -15,4 +15,6 @@
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
 package function
 
-type Handler func()
+type Handler func(req *Request, res *Response) (*Response, error)
+
+type Middleware func(req *Request) error

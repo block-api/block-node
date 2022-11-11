@@ -15,14 +15,15 @@
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
 package function
 
-type Response[T interface{}] struct {
-	body T `json:"b,omitempty"`
+type Response struct {
+	Body any `json:"b,omitempty"`
 }
 
-func (r *Response[T]) Body() (T, error) {
-	var b T
+// [T any]
+// func (r *Response[T]) GetBody() (T, error) {
+// 	var b T
 
-	// json.Unmarshal(r.body, &b)
+// 	// json.Unmarshal(r.body, &b)
 
-	return b, nil
-}
+// 	return b, nil
+// }

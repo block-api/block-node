@@ -18,10 +18,11 @@ package block
 import "github.com/block-api/block-node/block/function"
 
 type Function struct {
-	name     string
-	callback function.Handler
+	name        string
+	callback    function.Handler
+	middlewares []function.Middleware
 }
 
-func NewFunction(name string, fn function.Handler) Function {
-	return Function{name: name, callback: fn}
+func NewFunction(name string, fn function.Handler, middleware ...function.Middleware) Function {
+	return Function{name: name, callback: fn, middlewares: middleware}
 }

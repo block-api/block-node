@@ -13,30 +13,45 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
-package types
+package function
 
 import (
 	"errors"
 )
 
 var (
-	ErrInvalidTargetAction = errors.New("invalid target action")
+	ErrFunctionAlreadyExist = errors.New("function already exist")
+	ErrFunctionDoesNotExist = errors.New("function does not exist")
 )
 
-type (
-	NodeID    string
-	Hash      []byte
-	Sig       []byte
-	Timestamp int64
-	Bytes     []byte
-	DBType    string
-)
+type Manager struct {
+	functions map[string]Handler
+}
 
-const (
-	DbLevelDB DBType = "leveldb"
-	DbSqlite  DBType = "sqlite"
-)
+func NewManager() *Manager {
+	manager := &Manager{
+		functions: make(map[string]Handler),
+	}
 
-func (n NodeID) String() string {
-	return string(n)
+	manager.Add("sys.status", SysStatusFunction)
+
+	return manager
+}
+
+func (m *Manager) Add(name string, fn Handler) error {
+	if m.functions[name] != nil {
+		return ErrFunctionAlreadyExist
+	}
+
+	m.functions[name] = fn
+
+	return nil
+}
+
+func (m *Manager) Get(name string) (Handler, error) {
+	if m.functions[name] == nil {
+		return nil, ErrFunctionDoesNotExist
+	}
+
+	return m.functions[name], nil
 }

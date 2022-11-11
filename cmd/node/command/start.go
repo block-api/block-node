@@ -36,6 +36,10 @@ func StartNode(cCtx *cli.Context) error {
 
 	node.Start()
 
+	fnStatus, _ := node.FunctionManager().Get("sys.status")
+	fnStatus(nil, nil)
+	// fmt.Println(fnStatus)
+
 	var osSignal chan os.Signal = make(chan os.Signal, 1)
 	signal.Notify(osSignal, os.Interrupt, syscall.SIGTERM)
 
