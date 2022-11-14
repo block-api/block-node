@@ -1,5 +1,3 @@
-// Package network
-//
 // Copyright 2022 The block-node Authors
 // This file is part of the block-node library.
 //
@@ -15,6 +13,8 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
+
+// Package network
 package network
 
 import (
