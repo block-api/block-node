@@ -24,6 +24,7 @@ import (
 	"github.com/block-api/block-node/db"
 	"github.com/block-api/block-node/log"
 	"github.com/block-api/block-node/network"
+	"github.com/block-api/block-node/network/router"
 	"github.com/block-api/block-node/params"
 	"github.com/joho/godotenv"
 )
@@ -71,12 +72,6 @@ func NewNode() (*Node, error) {
 			return nil, err
 		}
 
-		functionManager := function.NewManager()
-		networkManager, err := network.NewManager(&config.Network, functionManager)
-		if err != nil {
-			return nil, err
-		}
-
 		account, err := NewNodeAccount()
 		if err != nil {
 			return nil, err
@@ -87,12 +82,33 @@ func NewNode() (*Node, error) {
 			config:          config,
 			account:         account,
 			databaseManager: databaseManager,
-			networkManager:  networkManager,
-			functionManager: functionManager,
 			cStop:           make(chan int),
 			wgNodeWorker:    new(sync.WaitGroup),
 		}
 
+		functionManager := function.NewManager(node.config.Name, node.config.Version)
+		networkManager, err := network.NewManager(node.id, node.config.Name, node.config.Version, &config.Network, functionManager)
+		if err != nil {
+			return nil, err
+		}
+
+		node.networkManager = networkManager
+		node.functionManager = functionManager
+
+		// add known nodes from config
+		if len(node.Config().Network.Nodes) > 0 {
+			for _, knownNode := range node.Config().Network.Nodes {
+				node.networkManager.Router().Add(knownNode.NodeID, &router.Node{
+					Transport:  knownNode.Transport,
+					NodeID:     knownNode.NodeID,
+					PublicHost: knownNode.PublicHost,
+					PublicPort: knownNode.PublicPort,
+					Functions:  make(map[string]bool),
+				})
+			}
+		}
+		// node.networkManager.Router().Add()
+		// fmt.Println(node.networkManager.Router().KnownNodes())
 		return node, nil
 	}
 	return nil, ErrAlreadyInstantiatied
@@ -124,7 +140,7 @@ func (n *Node) Stop() {
 
 	n.networkManager.Stop()
 
-	n.wgNodeWorker.Wait()
+	// n.wgNodeWorker.Wait()
 
 	log.Debug("node stopped")
 }
@@ -136,4 +152,8 @@ func (n *Node) Start() {
 	go nodeWorker(n)
 
 	n.networkManager.Start()
+}
+
+func (n *Node) NetworkManager() *network.Manager {
+	return n.networkManager
 }

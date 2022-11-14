@@ -1,3 +1,5 @@
+// Package network
+//
 // Copyright 2022 The block-node Authors
 // This file is part of the block-node library.
 //
@@ -20,20 +22,34 @@ import (
 	"sync"
 
 	"github.com/block-api/block-node/log"
+	"github.com/block-api/block-node/network/packet"
 )
 
-func (m *Manager) receiverWorker(cStop <-chan int, cReceive <-chan Packet, wgStop *sync.WaitGroup) {
+func (m *Manager) receiverWorker(transport Transport, cStop <-chan int, cReceive chan Packet, wgStop *sync.WaitGroup) {
 	log.Debug("network::receiver_worker::start")
+
+	go m.transport.Start(cReceive)
 L:
 	for {
 		select {
 		case <-cStop:
 			log.Debug("network::receiver_worker::stop")
-			wgStop.Done()
+			// wgStop.Done()
 			break L
-		case packet := <-cReceive:
+		case receivedPacket := <-cReceive:
+			fmt.Println(receivedPacket)
+
 			log.Debug("network::receiver_worker::received_packet")
-			fmt.Println(packet)
+			fmt.Println(receivedPacket)
+			fmt.Println("^^^^^^^^^^^^^^")
+
+			if receivedPacket.Type == packet.Heartbeat {
+				log.Debug("-- process heartbeat --")
+
+				return
+			}
+
+			fmt.Println("----")
 			continue
 		}
 	}

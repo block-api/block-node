@@ -16,9 +16,10 @@
 package params
 
 import (
-	"encoding/json"
+	"fmt"
 
 	"github.com/block-api/block-node/network/transport"
+	"gopkg.in/yaml.v3"
 )
 
 // DefaultNetworkTransport default transport method used by block node network module
@@ -42,32 +43,41 @@ const DefaultNetworkHeartbeatInterval int = 5
 
 // NetworkConfig describs configuration options for network
 type NetworkConfig struct {
-	HeartbeatInterval int            `yaml:"heartbeat_interval"`
-	ActionTimeout     int            `yaml:"action_timeout"`
-	Transport         transport.Type `yaml:"transport"`
-	Settings          any            `yaml:"settings"`
+	HeartbeatInterval int                 `yaml:"heartbeat_interval" json:"hi"`
+	ActionTimeout     int                 `yaml:"action_timeout" json:"at"`
+	Transport         transport.Type      `yaml:"transport" json:"t"`
+	Settings          interface{}         `yaml:"settings" json:"s"`
+	Nodes             []NetworkNodeConfig `yamls:"nodes" json:"n"`
+}
+
+type NetworkNodeConfig struct {
+	NodeID     string         `yaml:"node_id" json:"nid"`
+	Transport  transport.Type `yaml:"transport" json:"t"`
+	PublicHost string         `yaml:"public_host" json:"ph"`
+	PublicPort string         `yaml:"public_port" json:"pp"`
 }
 
 type NetworkTCPSettings struct {
-	PublicHost string `yaml:"public_host"`
-	PublicPort string `yaml:"public_port"`
-	BindHost   string `yaml:"bind_host"`
-	BindPort   string `yaml:"bind_port"`
+	PublicHost string `yaml:"public_host" json:"ph"`
+	PublicPort string `yaml:"public_port" json:"pp"`
+	BindHost   string `yaml:"bind_host" json:"bh"`
+	BindPort   string `yaml:"bind_port" json:"bp"`
 }
 type NetworkRedisSettings struct{}
 
-func GetNetworkSettings[T NetworkTCPSettings | NetworkRedisSettings](config *NetworkConfig) (*T, error) {
-	settingsBytes, err := json.Marshal(config.Settings)
-	if err != nil {
-		return nil, err
-	}
-
+func GetNetworkSettings[T NetworkTCPSettings | NetworkRedisSettings](config *NetworkConfig) (T, error) {
 	var settings T
 
-	err = json.Unmarshal(settingsBytes, &settings)
+	fmt.Println(config.Settings)
+	settingsBytes, err := yaml.Marshal(config.Settings)
 	if err != nil {
-		return nil, err
+		return settings, err
 	}
 
-	return &settings, nil
+	err = yaml.Unmarshal(settingsBytes, &settings)
+	if err != nil {
+		return settings, err
+	}
+
+	return settings, nil
 }

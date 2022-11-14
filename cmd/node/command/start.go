@@ -47,11 +47,11 @@ func StartNode(cCtx *cli.Context) error {
 		select {
 		case <-osSignal:
 			log.Warning("shutting down, please wait")
-			node := block.GetNode()
+			// node := block.GetNode()
 
-			if node != nil {
-				block.GetNode().Stop()
-			}
+			// if node != nil {
+			// 	block.GetNode().Stop()
+			// }
 
 			os.Exit(0)
 		}

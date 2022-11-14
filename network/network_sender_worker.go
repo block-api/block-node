@@ -16,33 +16,68 @@
 package network
 
 import (
+	"errors"
 	"fmt"
 	"sync"
+	"time"
 
+	"github.com/block-api/block-node/block/function"
 	"github.com/block-api/block-node/log"
+	"github.com/block-api/block-node/params"
 )
 
-func (m *Manager) senderWorker(cStop <-chan int, cSend <-chan Packet, wgStop *sync.WaitGroup) {
+var (
+	ErrPacketRequestTimeout = errors.New("packet request timeout")
+)
+
+func (m *Manager) senderWorker(nodeID string, config *params.NetworkConfig, transpo *Transport, cStop <-chan int, cSend <-chan Packet, wgStop *sync.WaitGroup) {
 	log.Debug("network::sender_worker::start")
 L:
 	for {
 		select {
 		case <-cStop:
 			log.Debug("network::sender_worker::stop")
-			wgStop.Done()
+			// wgStop.Done()
 			break L
 		case packet := <-cSend:
+			// todo: limiting rate X / s
 			log.Debug("network::sender_worker::received_packet")
-			fmt.Println(packet)
-			fmt.Println("-- send packet --")
-
-			go sendPacketWorker(packet)
+			go sendPacketWorker(m, config, packet, transpo)
 
 			continue
 		}
 	}
 }
 
-func sendPacketWorker(packet Packet) {
+func sendPacketWorker(m *Manager, config *params.NetworkConfig, sendPacket Packet, transpo *Transport) {
 	log.Debug("network::send_packet_worker::start")
+	var tickerTimeout = time.NewTicker(time.Second * time.Duration(config.ActionTimeout))
+
+	if m.nodeID == sendPacket.TargetID && sendPacket.TargetNodeFunction != "" {
+		handler, err := m.GetFunction(sendPacket.TargetNodeFunction)
+		if err != nil {
+			log.Warning(err.Error())
+			return
+		}
+
+		// handler.
+		fmt.Println(handler)
+		// packet.TargetNodeFunction
+		tickerTimeout.Stop()
+
+		req := new(function.Request)
+		res := new(function.Response)
+
+		handlerResponse, err := handler(req, res)
+		fmt.Println("---- SHOULD SEND TO SELF -- CALL FUNC LOCALLY ----")
+		fmt.Println(handlerResponse)
+		fmt.Println(err)
+
+		return
+	}
+	m.transport.Send(sendPacket)
+
+	// transpo.Send(packet)
+	<-tickerTimeout.C
+
 }

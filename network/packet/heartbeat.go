@@ -23,4 +23,6 @@ type HeartbeatBody struct {
 	PublicHost string          `json:"ph"`
 	PublicPort string          `json:"pp"`
 	KnownNodes map[string]Node `json:"kn,omitempty"`
+	Functions  map[string]bool `json:"f"`
+	CreatedAt  int64           `json:"cat"`
 }

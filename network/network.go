@@ -17,9 +17,12 @@ package network
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/block-api/block-node/block/function"
+	"github.com/block-api/block-node/log"
+	"github.com/block-api/block-node/network/transport"
 	"github.com/block-api/block-node/params"
 )
 
@@ -32,8 +35,10 @@ var manager *Manager
 var managerLock = new(sync.Mutex)
 
 type Manager struct {
+	nodeID               string
 	config               *params.NetworkConfig
 	functionManager      *function.Manager
+	transport            Transport
 	router               *Router
 	cStopNetworkWorker   chan int
 	cStopSenderkWorker   chan int
@@ -44,15 +49,16 @@ type Manager struct {
 	cSendLock            *sync.Mutex
 }
 
-func NewManager(config *params.NetworkConfig, functionManager *function.Manager) (*Manager, error) {
+func NewManager(nodeID string, nodeName string, nodeVersion int, config *params.NetworkConfig, functionManager *function.Manager) (*Manager, error) {
 	if manager == nil {
 		managerLock.Lock()
 		defer managerLock.Unlock()
 
 		manager = &Manager{
+			nodeID:               nodeID,
 			config:               config,
 			functionManager:      functionManager,
-			router:               NewRouter(config),
+			router:               NewRouter(nodeName, nodeVersion, config),
 			cStopNetworkWorker:   make(chan int),
 			cStopSenderkWorker:   make(chan int),
 			cStopReceiverkWorker: make(chan int),
@@ -60,6 +66,14 @@ func NewManager(config *params.NetworkConfig, functionManager *function.Manager)
 			cReceive:             make(chan Packet),
 			wgStop:               new(sync.WaitGroup),
 			cSendLock:            new(sync.Mutex),
+		}
+
+		switch config.Transport {
+		case transport.TCP:
+			manager.transport = NewTransport[TCPTransport](manager, config)
+
+		case transport.REDIS:
+			manager.transport = NewTransport[RedisTransport](manager, config)
 		}
 
 		return manager, nil
@@ -72,18 +86,22 @@ func GetManager() *Manager {
 	return manager
 }
 
+func (m *Manager) Router() *Router {
+	return m.router
+}
+
 func (m *Manager) Start() error {
-	m.wgStop.Add(1)
+	// m.wgStop.Add(1)
 
 	go m.networkWorker(m.cStopNetworkWorker, m.wgStop)
 
-	m.wgStop.Add(1)
+	// m.wgStop.Add(1)
 
-	go m.senderWorker(m.cStopSenderkWorker, m.cSend, m.wgStop)
+	go m.senderWorker(m.nodeID, m.config, &m.transport, m.cStopSenderkWorker, m.cSend, m.wgStop)
 
-	m.wgStop.Add(1)
+	// m.wgStop.Add(1)
 
-	go m.receiverWorker(m.cStopReceiverkWorker, m.cReceive, m.wgStop)
+	go m.receiverWorker(m.transport, m.cStopReceiverkWorker, m.cReceive, m.wgStop)
 
 	return nil
 }
@@ -94,7 +112,7 @@ func (m *Manager) Stop() error {
 	m.cStopReceiverkWorker <- 1
 	m.cStopNetworkWorker <- 1
 
-	m.wgStop.Wait()
+	// m.wgStop.Wait()
 
 	return nil
 }
@@ -106,12 +124,14 @@ func (m *Manager) GetFunction(name string) (function.Handler, error) {
 func (n *Manager) Send(packet Packet) error {
 	err := packet.Validate()
 	if err != nil {
+
 		return err
 	}
 
+	log.Default("### SEND ###")
+	fmt.Println(packet)
 	n.cSendLock.Lock()
 	n.cSend <- packet
 	n.cSendLock.Unlock()
-
 	return nil
 }

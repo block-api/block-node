@@ -17,6 +17,7 @@ package network
 
 import (
 	"sync"
+	"time"
 
 	"github.com/block-api/block-node/log"
 	"github.com/block-api/block-node/network/delivery"
@@ -39,10 +40,6 @@ L:
 	wgStop.Done()
 }
 
-type Heartbeat struct {
-	Packet
-}
-
 func NewHeartbeat(config *params.NetworkConfig, fromID string, targetID string, targetFunction string) Packet {
 	knownNodes := make(map[string]packet.Node)
 
@@ -52,6 +49,7 @@ func NewHeartbeat(config *params.NetworkConfig, fromID string, targetID string, 
 			Transport:  node.Transport,
 			PublicHost: node.PublicHost,
 			PublicPort: node.PublicPort,
+			Functions:  node.Functions,
 		}
 	}
 
@@ -59,6 +57,14 @@ func NewHeartbeat(config *params.NetworkConfig, fromID string, targetID string, 
 		NodeID:     fromID,
 		Transport:  config.Transport,
 		KnownNodes: knownNodes,
+		Functions:  make(map[string]bool),
+		CreatedAt:  time.Now().UnixMilli(),
+	}
+
+	// add own functions
+	allFunctions := manager.functionManager.GetAll()
+	for functionName := range *allFunctions {
+		beatBody.Functions[functionName] = true
 	}
 
 	if config.Transport == transport.TCP {
@@ -66,6 +72,6 @@ func NewHeartbeat(config *params.NetworkConfig, fromID string, targetID string, 
 		beatBody.PublicHost = tcpSettings.PublicHost
 		beatBody.PublicPort = tcpSettings.PublicPort
 	}
-
+	// fmt.Println(beatBody)
 	return NewPacket(delivery.All, packet.Heartbeat, fromID, targetID, targetFunction, beatBody, nil)
 }

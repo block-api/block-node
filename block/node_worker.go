@@ -45,7 +45,7 @@ L:
 		}
 	}
 
-	n.wgNodeWorker.Done()
+	// n.wgNodeWorker.Done()
 
 	log.Debug("node::node_worker::stop")
 }

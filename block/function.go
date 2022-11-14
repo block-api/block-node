@@ -15,14 +15,19 @@
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
 package block
 
-import "github.com/block-api/block-node/block/function"
+import (
+	"github.com/block-api/block-node/block/function"
+	"github.com/block-api/block-node/network"
+)
 
 type Function struct {
-	name        string
+	Name        string
 	callback    function.Handler
 	middlewares []function.Middleware
 }
 
 func NewFunction(name string, fn function.Handler, middleware ...function.Middleware) Function {
-	return Function{name: name, callback: fn, middlewares: middleware}
+	return Function{Name: name, callback: fn, middlewares: middleware}
 }
+
+func (f *Function) RunCallback(packet network.Packet) {}

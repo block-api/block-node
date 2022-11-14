@@ -17,6 +17,7 @@ package function
 
 import (
 	"errors"
+	"fmt"
 )
 
 var (
@@ -25,12 +26,16 @@ var (
 )
 
 type Manager struct {
-	functions map[string]Handler
+	functions   map[string]Handler
+	nodeName    string
+	nodeVersion int
 }
 
-func NewManager() *Manager {
+func NewManager(nodeName string, nodeVersion int) *Manager {
 	manager := &Manager{
-		functions: make(map[string]Handler),
+		nodeName:    nodeName,
+		nodeVersion: nodeVersion,
+		functions:   make(map[string]Handler),
 	}
 
 	manager.Add("sys.status", SysStatusFunction)
@@ -39,13 +44,18 @@ func NewManager() *Manager {
 }
 
 func (m *Manager) Add(name string, fn Handler) error {
-	if m.functions[name] != nil {
+	fnName := "v" + fmt.Sprint(m.nodeVersion) + "." + m.nodeName + "." + name
+	if m.functions[fnName] != nil {
 		return ErrFunctionAlreadyExist
 	}
 
-	m.functions[name] = fn
+	m.functions[fnName] = fn
 
 	return nil
+}
+
+func (m *Manager) GetAll() *map[string]Handler {
+	return &m.functions
 }
 
 func (m *Manager) Get(name string) (Handler, error) {

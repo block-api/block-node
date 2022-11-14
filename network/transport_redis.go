@@ -13,15 +13,28 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
-package router
+package network
 
-import "github.com/block-api/block-node/network/transport"
+import (
+	"github.com/block-api/block-node/log"
+)
 
-type Node struct {
-	Transport  transport.Type  `yaml:"transport" json:"t"`
-	NodeID     string          `yaml:"node_id" json:"nid"`
-	PublicHost string          `yaml:"public_host" json:"ph"`
-	PublicPort string          `yaml:"public_port" json:"pp"`
-	Functions  map[string]bool `yaml:"functions" json:"f"`
-	LastSeen   int64           `yaml:"last_seen" json:"ls"`
+type RedisTransport struct {
+	ITransport
+	networkManager *Manager
+	cReceive       chan Packet
+}
+
+func (rt RedisTransport) Start(cReceive chan<- Packet) error {
+	log.Debug("-- redis_transport::start --")
+	return nil
+}
+
+func (rt RedisTransport) Stop() error {
+	log.Debug("-- redis_transport::stop --")
+	return nil
+}
+
+func (rt RedisTransport) Send(packet Packet) {
+	log.Debug("-- redis_transport::send --")
 }

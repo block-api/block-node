@@ -18,8 +18,9 @@ package packet
 import "github.com/block-api/block-node/network/transport"
 
 type Node struct {
-	Transport  transport.Type `yaml:"transport" json:"t"`
-	NodeID     string         `yaml:"node_id" json:"nid"`
-	PublicHost string         `yaml:"public_host" json:"ph"`
-	PublicPort string         `yaml:"public_port" json:"pp"`
+	Transport  transport.Type  `yaml:"transport" json:"t"`
+	NodeID     string          `yaml:"node_id" json:"nid"`
+	PublicHost string          `yaml:"public_host" json:"ph"`
+	PublicPort string          `yaml:"public_port" json:"pp"`
+	Functions  map[string]bool `yaml:"functions" json:"f"`
 }
