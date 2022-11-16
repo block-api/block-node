@@ -20,12 +20,10 @@ package network
 import (
 	"errors"
 	"fmt"
-	"sync"
-	"time"
-
 	"github.com/block-api/block-node/block/function"
 	"github.com/block-api/block-node/log"
 	"github.com/block-api/block-node/params"
+	"sync"
 )
 
 var (
@@ -53,33 +51,28 @@ L:
 
 func sendPacketWorker(m *Manager, config *params.NetworkConfig, sendPacket Packet, transpo *Transport) {
 	log.Debug("network::send_packet_worker::start")
-	var tickerTimeout = time.NewTicker(time.Second * time.Duration(config.ActionTimeout))
+	//var tickerTimeout = time.NewTicker(time.Second * time.Duration(config.ActionTimeout))
 
 	if m.nodeID == sendPacket.TargetID && sendPacket.TargetNodeFunction != "" {
-		handler, err := m.GetFunction(sendPacket.TargetNodeFunction)
+		fn, err := m.GetFunction(sendPacket.TargetNodeFunction)
 		if err != nil {
 			log.Warning(err.Error())
 			return
 		}
 
-		// handler.
-		fmt.Println(handler)
-		// packet.TargetNodeFunction
-		tickerTimeout.Stop()
+		reqFn := function.NewRequest(sendPacket.FromID, sendPacket.Body)
+		resFn := function.NewResponse()
 
-		req := new(function.Request)
-		res := new(function.Response)
-
-		handlerResponse, err := handler(req, res)
+		fnResponse, fnErr := fn(&reqFn, &resFn)
 		fmt.Println("---- SHOULD SEND TO SELF -- CALL FUNC LOCALLY ----")
-		fmt.Println(handlerResponse)
-		fmt.Println(err)
+		fmt.Println(fnResponse)
+		fmt.Println(fnErr)
 
 		return
 	}
-	m.transport.Send(sendPacket)
 
+	m.transport.Send(sendPacket)
 	// transpo.Send(packet)
-	<-tickerTimeout.C
+	//<-tickerTimeout.C
 
 }

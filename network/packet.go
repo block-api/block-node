@@ -119,6 +119,14 @@ func DecodePacket(data []byte) Packet {
 		decodedPacket.Body = bodyCmd
 
 		break
+	case packet.Function:
+		var bodyCmd packet.FunctionBody
+
+		bodyBytes, _ := json.Marshal(decodedPacket.Body)
+		_ = json.Unmarshal(bodyBytes, &bodyCmd)
+		decodedPacket.Body = bodyCmd
+
+		break
 	default:
 		break
 	}

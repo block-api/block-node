@@ -69,8 +69,6 @@ func (tr TCPTransport) Start(cReceive chan<- Packet) error {
 
 		go listenerConnWorker(tr.networkManager, tr.nodeID, conn, manager.config, tr.cReceive)
 	}
-
-	return nil
 }
 
 func startTCPListener(tcpSettings *params.NetworkTCPSettings) (net.Listener, error) {
@@ -156,10 +154,7 @@ func listenerConnWorker(networkManager *Manager, nodeID string, conn net.Conn, c
 		return
 	}
 
-	if decodedPacket.Type == packet.Cmd {
-		log.Default("-- Packet Cmd --")
-		log.Debug(networkManager.nodeID)
-		log.Default(decodedPacket.TargetNodeFunction)
+	if decodedPacket.Type == packet.Function {
 		fn, err := networkManager.functionManager.Get(decodedPacket.TargetNodeFunction)
 		if err != nil {
 			log.Warning(err.Error())
@@ -168,16 +163,14 @@ func listenerConnWorker(networkManager *Manager, nodeID string, conn net.Conn, c
 
 		reqFn := function.Request{}
 		resFn := function.Response{}
-
-		log.Default("-- CMD - RUN FUNCTION --")
-
+		log.Default("XxXxXxXxXxXxXxXxx")
 		fnResponse, fnErr := fn(&reqFn, &resFn)
-
-		//func(req *Request, res *Response) (*Response, error
-		fmt.Println(fnResponse.Body)
 		if fnErr != nil {
 			log.Warning(fnErr.Error())
 		}
+
+		// send it back
+		fmt.Println(fnResponse.Body)
 	}
 }
 
@@ -206,15 +199,16 @@ func (tr TCPTransport) Send(sendPacket Packet) {
 			log.Warning(err.Error())
 			continue
 		}
-		defer conn.Close()
 
 		packetBytes, _ := sendPacket.Bytes()
 		_, err = conn.Write(packetBytes)
 		if err != nil {
-
+			_ = conn.Close()
 			log.Warning(err.Error())
 			continue
 		}
+
+		_ = conn.Close()
 		log.Default("packet sent to node: " + string(sendPacket.Delivery))
 	}
 }

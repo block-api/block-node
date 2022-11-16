@@ -18,7 +18,15 @@
 package function
 
 type Response struct {
-	Body any `json:"b,omitempty"`
+	Status int    `json:"s,omitempty"`
+	Body   any    `json:"b,omitempty"`
+	Error  string `json:"e,omitempty"`
+}
+
+func NewResponse() Response {
+	return Response{
+		Status: 204,
+	}
 }
 
 // [T any]

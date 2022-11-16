@@ -22,7 +22,10 @@ import (
 	"os"
 	"sync"
 
+	"github.com/block-api/block-node/event"
+
 	"github.com/block-api/block-node/block/function"
+	"github.com/block-api/block-node/block/sys"
 	"github.com/block-api/block-node/db"
 	"github.com/block-api/block-node/log"
 	"github.com/block-api/block-node/network"
@@ -47,6 +50,7 @@ type Node struct {
 	id              string
 	config          *params.NodeConfig
 	account         *NodeAccount
+	eventManager    *event.Manager
 	databaseManager *db.Manager
 	networkManager  *network.Manager
 	functionManager *function.Manager
@@ -79,10 +83,16 @@ func NewNode() (*Node, error) {
 			return nil, err
 		}
 
+		eventManager, err := event.NewManager()
+		if err != nil {
+			return nil, err
+		}
+
 		node = &Node{
 			id:              account.wallet.Address.String(),
 			config:          config,
 			account:         account,
+			eventManager:    eventManager,
 			databaseManager: databaseManager,
 			cStop:           make(chan int),
 			wgNodeWorker:    new(sync.WaitGroup),
@@ -109,8 +119,9 @@ func NewNode() (*Node, error) {
 				})
 			}
 		}
-		// node.networkManager.Router().Add()
-		// fmt.Println(node.networkManager.Router().KnownNodes())
+
+		node.eventManager.On("sys", sys.EventCallback)
+
 		return node, nil
 	}
 	return nil, ErrAlreadyInstantiatied
@@ -134,6 +145,11 @@ func (n *Node) Config() *params.NodeConfig {
 // FunctionManager returns FunctionManager
 func (n *Node) FunctionManager() *function.Manager {
 	return n.functionManager
+}
+
+// EventManager returns EventManager
+func (n *Node) EventManager() *event.Manager {
+	return n.eventManager
 }
 
 // Stop sends information to cStop channel to stop program

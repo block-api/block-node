@@ -23,7 +23,8 @@ network:
     bind_port: "8090"
   # known nodes at startup - will send heartbeat
   nodes:
-    - transport: "tcp"
+    - node_id: "0x4BFc7b649A1127330967329D4e35c827122EE130"
+      transport: "tcp"
       public_host: "localhost"
       public_port: "8090"
 # -- database settings ---

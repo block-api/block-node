@@ -14,33 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
 
-// Package function
-package function
+// Package packet
+package packet
 
-import (
-	"encoding/json"
-	"fmt"
-)
-
-type Request struct {
-	FromID string `json:"fid,omitempty"`
-	Body   any    `json:"b,omitempty"`
-}
-
-func NewRequest(fromID string, body any) Request {
-	return Request{
-		FromID: fromID,
-		Body:   body,
-	}
-}
-
-func DecodeBody[T any](body any) T {
-	var out T
-
-	bodyBytes, _ := json.Marshal(body)
-
-	e := json.Unmarshal(bodyBytes, &out)
-	fmt.Println(e)
-	fmt.Println(out)
-	return out
+type FunctionBody struct {
+	Payload any `json:"p"`
 }

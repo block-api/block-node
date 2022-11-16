@@ -33,6 +33,7 @@ type Type string
 const (
 	Heartbeat Type = "hbt"
 	Cmd       Type = "cmd"
+	Function  Type = "fn"
 )
 
 var ErrInvalidHeader = []byte("INVALID_HEADER")

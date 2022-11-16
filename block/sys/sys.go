@@ -14,33 +14,17 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
 
-// Package function
-package function
+// Package sys
+package sys
 
 import (
-	"encoding/json"
 	"fmt"
+
+	"github.com/block-api/block-node/event"
+	"github.com/block-api/block-node/log"
 )
 
-type Request struct {
-	FromID string `json:"fid,omitempty"`
-	Body   any    `json:"b,omitempty"`
-}
-
-func NewRequest(fromID string, body any) Request {
-	return Request{
-		FromID: fromID,
-		Body:   body,
-	}
-}
-
-func DecodeBody[T any](body any) T {
-	var out T
-
-	bodyBytes, _ := json.Marshal(body)
-
-	e := json.Unmarshal(bodyBytes, &out)
+func EventCallback(e event.Event) {
+	log.Default("---> received Event")
 	fmt.Println(e)
-	fmt.Println(out)
-	return out
 }
