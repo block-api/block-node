@@ -38,10 +38,6 @@ func StartNode(cCtx *cli.Context) error {
 
 	node.Start()
 
-	// fnStatus, _ := node.FunctionManager().Get("sys.status")
-	// res, err := fnStatus(nil, nil)
-	// fmt.Println(res)
-
 	var osSignal chan os.Signal = make(chan os.Signal, 1)
 	signal.Notify(osSignal, os.Interrupt, syscall.SIGTERM)
 
@@ -49,11 +45,11 @@ func StartNode(cCtx *cli.Context) error {
 		select {
 		case <-osSignal:
 			log.Warning("shutting down, please wait")
-			// node := block.GetNode()
+			node := block.GetNode()
 
-			// if node != nil {
-			// 	block.GetNode().Stop()
-			// }
+			if node != nil {
+				block.GetNode().Stop()
+			}
 
 			os.Exit(0)
 		}

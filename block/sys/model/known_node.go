@@ -14,29 +14,16 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the block-node library. If not, see <http://www.gnu.org/licenses/>.
 
-// Package pool
-package pool
+// Package model
+package model
 
-import "sync"
+import "github.com/block-api/block-node/network/transport"
 
-type WorkerHandler func(payload interface{})
-
-type Pool struct {
-	name         string
-	maxWorkers   int
-	workersCount int
-	worker       WorkerHandler
-	cIn          chan interface{}
-	cOut         chan interface{}
-	lockIn       *sync.Mutex
-}
-
-func NewPool(name string, maxWorkers int, workerHandler WorkerHandler) Pool {
-	return Pool{
-		name:       name,
-		maxWorkers: maxWorkers,
-		cIn:        make(chan interface{}),
-		cOut:       make(chan interface{}),
-		lockIn:     new(sync.Mutex),
-	}
+type KnownNode struct {
+	Transport  transport.Type  `json:"t"`
+	PublicHost string          `json:"ph"`
+	PublicPort string          `json:"pp"`
+	Functions  map[string]bool `json:"f"`
+	LastSeen   int64           `json:"lsat"`
+	LastTry    int64           `json:"ltat"`
 }

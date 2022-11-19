@@ -30,6 +30,9 @@ const DBNamePrefix = "bn_"
 // DbSys block node internal db
 const DBSys = DBNamePrefix + "sys"
 
+// DBSysCounter sys db for counters - as leveldb does not support it
+const DBSysCounters = DBNamePrefix + "sys_counters"
+
 // DbSysKnownNodes name of internal database where system keeps
 // informations about network topology
 const DBSysKnownNodes = DBNamePrefix + "sys_known_nodes"

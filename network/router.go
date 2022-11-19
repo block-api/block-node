@@ -23,7 +23,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/block-api/block-node/log"
+	"github.com/block-api/block-node/block/sys/model"
+	"github.com/block-api/block-node/block/sys/repo"
 	"github.com/block-api/block-node/network/delivery"
 	"github.com/block-api/block-node/network/router"
 	"github.com/block-api/block-node/params"
@@ -36,9 +37,10 @@ var (
 
 // knownNodesMaxSize max map in memory size to keep information about topology of known nodes
 // it will try to find in memory, then in database
-const knownNodesMaxSize = 50
+// const knownNodesMaxMemorySize = 50
 
 type Router struct {
+	knownNodesRepo    *repo.KnownNodeRepo
 	nodeName          string
 	nodeVersion       int
 	config            *params.NetworkConfig
@@ -48,7 +50,8 @@ type Router struct {
 }
 
 func NewRouter(nodeName string, nodeVersion int, config *params.NetworkConfig) *Router {
-	return &Router{
+	rtr := &Router{
+		knownNodesRepo:    repo.GetKnownNode(),
 		nodeName:          nodeName,
 		nodeVersion:       nodeVersion,
 		config:            config,
@@ -56,24 +59,71 @@ func NewRouter(nodeName string, nodeVersion int, config *params.NetworkConfig) *
 		knownNodesCounter: 0,
 		knownNodesLock:    new(sync.Mutex),
 	}
+
+	dbNodesCount := rtr.knownNodesRepo.Count()
+	if dbNodesCount > 0 {
+
+	}
+
+	if len(config.Nodes) > 0 {
+		for _, knownNode := range config.Nodes {
+			rtr.Add(knownNode.NodeID, &router.Node{
+				Transport:  knownNode.Transport,
+				NodeID:     knownNode.NodeID,
+				PublicHost: knownNode.PublicHost,
+				PublicPort: knownNode.PublicPort,
+				Functions:  make(map[string]bool),
+			})
+		}
+
+	}
+
+	// fmt.Println(rtr.knownNodesRepo.Count())
+	// counterRepo := repo.GetCounter()
+	// resCounter, err := counterRepo.Get(params.DBSysKnownNodes)
+	// if err != nil {
+	// 	log.Warning(err.Error())
+	// }
+	// fmt.Println(resCounter)
+	// fmt.Println(counterRepo)
+	// rtr.knownNodesRepo.Get()
+	return rtr
 }
 
 func (r *Router) Add(nodeID string, node *router.Node) error {
 	r.knownNodesLock.Lock()
 	defer r.knownNodesLock.Unlock()
 
-	if r.knownNodes[nodeID] != nil && r.knownNodes[nodeID].LastSeen >= node.LastSeen {
-		log.Warning(ErrRouterNodeAlreadyExist.Error())
-		return ErrRouterNodeAlreadyExist
+	hasNode, err := r.knownNodesRepo.Has(nodeID)
+	if err != nil {
+		return err
 	}
 
-	r.knownNodes[nodeID] = node
+	if !hasNode {
+		err := r.knownNodesRepo.Add(nodeID, model.KnownNode{
+			Transport:  node.Transport,
+			PublicHost: node.PublicHost,
+			PublicPort: node.PublicPort,
+			Functions:  node.Functions,
+			LastSeen:   node.LastSeen,
+		})
+		if err != nil {
+			return err
+		}
 
-	return nil
+		return nil
+	}
+
+	return ErrRouterNodeAlreadyExist
 }
 
 func (r *Router) GetNode(nodeID string) *router.Node {
-	return r.knownNodes[nodeID]
+	node, err := r.knownNodesRepo.Get(nodeID)
+	if err != nil {
+		return nil
+	}
+
+	return &router.Node{Transport: node.Transport, NodeID: nodeID, PublicHost: node.PublicHost, PublicPort: node.PublicPort, Functions: node.Functions, LastSeen: node.LastSeen}
 }
 
 func (r *Router) Remove(nodeID string) error {

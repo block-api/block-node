@@ -29,7 +29,6 @@ import (
 	"github.com/block-api/block-node/db"
 	"github.com/block-api/block-node/log"
 	"github.com/block-api/block-node/network"
-	"github.com/block-api/block-node/network/router"
 	"github.com/block-api/block-node/params"
 	"github.com/joho/godotenv"
 )
@@ -87,6 +86,7 @@ func NewNode() (*Node, error) {
 		if err != nil {
 			return nil, err
 		}
+		eventManager.On("sys", sys.EventCallback)
 
 		node = &Node{
 			id:              account.wallet.Address.String(),
@@ -108,19 +108,17 @@ func NewNode() (*Node, error) {
 		node.functionManager = functionManager
 
 		// add known nodes from config
-		if len(node.Config().Network.Nodes) > 0 {
-			for _, knownNode := range node.Config().Network.Nodes {
-				node.networkManager.Router().Add(knownNode.NodeID, &router.Node{
-					Transport:  knownNode.Transport,
-					NodeID:     knownNode.NodeID,
-					PublicHost: knownNode.PublicHost,
-					PublicPort: knownNode.PublicPort,
-					Functions:  make(map[string]bool),
-				})
-			}
-		}
-
-		node.eventManager.On("sys", sys.EventCallback)
+		// if len(node.Config().Network.Nodes) > 0 {
+		// 	for _, knownNode := range node.Config().Network.Nodes {
+		// 		node.networkManager.Router().Add(knownNode.NodeID, &router.Node{
+		// 			Transport:  knownNode.Transport,
+		// 			NodeID:     knownNode.NodeID,
+		// 			PublicHost: knownNode.PublicHost,
+		// 			PublicPort: knownNode.PublicPort,
+		// 			Functions:  make(map[string]bool),
+		// 		})
+		// 	}
+		// }
 
 		return node, nil
 	}
@@ -154,9 +152,9 @@ func (n *Node) EventManager() *event.Manager {
 
 // Stop sends information to cStop channel to stop program
 func (n *Node) Stop() {
-	n.cStop <- 1
+	// n.cStop <- 1
 
-	n.networkManager.Stop()
+	// n.networkManager.Stop()
 
 	// n.wgNodeWorker.Wait()
 

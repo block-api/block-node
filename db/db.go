@@ -163,7 +163,7 @@ func GetManager() *Manager {
 }
 
 func (db *Manager) startSysDatabases() error {
-	if db.databases[params.DBSysKnownNodes] || db.databases[params.DBSys] {
+	if db.databases[params.DBSysKnownNodes] || db.databases[params.DBSys] || db.databases[params.DBSysCounters] {
 		return ErrDbNameExist
 	}
 
@@ -174,6 +174,15 @@ func (db *Manager) startSysDatabases() error {
 	db.databases[params.DBSys] = true
 	db.leveldb[params.DBSys] = &LevelDB{
 		DB: dbSys,
+	}
+
+	dbSysCounters, err := leveldb.OpenFile(db.config.DataDir+params.DBDir+params.DBSysCounters, nil)
+	if err != nil {
+		return err
+	}
+	db.databases[params.DBSysCounters] = true
+	db.leveldb[params.DBSysCounters] = &LevelDB{
+		DB: dbSysCounters,
 	}
 
 	dbKnownNodes, err := leveldb.OpenFile(db.config.DataDir+params.DBDir+params.DBSysKnownNodes, nil)
