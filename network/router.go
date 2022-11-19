@@ -20,11 +20,11 @@ package network
 import (
 	"errors"
 	"math/rand"
-	"sync"
+	"strconv"
 	"time"
 
-	"github.com/block-api/block-node/block/sys/model"
 	"github.com/block-api/block-node/block/sys/repo"
+	"github.com/block-api/block-node/log"
 	"github.com/block-api/block-node/network/delivery"
 	"github.com/block-api/block-node/network/router"
 	"github.com/block-api/block-node/params"
@@ -35,10 +35,6 @@ var (
 	ErrRouterNodeAlreadyExist = errors.New("router node id already exist")
 )
 
-// knownNodesMaxSize max map in memory size to keep information about topology of known nodes
-// it will try to find in memory, then in database
-// const knownNodesMaxMemorySize = 50
-
 type Router struct {
 	knownNodesRepo    *repo.KnownNodeRepo
 	nodeName          string
@@ -46,7 +42,6 @@ type Router struct {
 	config            *params.NetworkConfig
 	knownNodes        map[string]*router.Node
 	knownNodesCounter int
-	knownNodesLock    *sync.Mutex
 }
 
 func NewRouter(nodeName string, nodeVersion int, config *params.NetworkConfig) *Router {
@@ -57,12 +52,11 @@ func NewRouter(nodeName string, nodeVersion int, config *params.NetworkConfig) *
 		config:            config,
 		knownNodes:        make(map[string]*router.Node),
 		knownNodesCounter: 0,
-		knownNodesLock:    new(sync.Mutex),
 	}
 
 	dbNodesCount := rtr.knownNodesRepo.Count()
 	if dbNodesCount > 0 {
-
+		log.Default("known nodes count: " + strconv.FormatInt(dbNodesCount, 10))
 	}
 
 	if len(config.Nodes) > 0 {
@@ -78,29 +72,17 @@ func NewRouter(nodeName string, nodeVersion int, config *params.NetworkConfig) *
 
 	}
 
-	// fmt.Println(rtr.knownNodesRepo.Count())
-	// counterRepo := repo.GetCounter()
-	// resCounter, err := counterRepo.Get(params.DBSysKnownNodes)
-	// if err != nil {
-	// 	log.Warning(err.Error())
-	// }
-	// fmt.Println(resCounter)
-	// fmt.Println(counterRepo)
-	// rtr.knownNodesRepo.Get()
 	return rtr
 }
 
 func (r *Router) Add(nodeID string, node *router.Node) error {
-	r.knownNodesLock.Lock()
-	defer r.knownNodesLock.Unlock()
-
 	hasNode, err := r.knownNodesRepo.Has(nodeID)
 	if err != nil {
 		return err
 	}
 
 	if !hasNode {
-		err := r.knownNodesRepo.Add(nodeID, model.KnownNode{
+		err := r.knownNodesRepo.Add(nodeID, router.Node{
 			Transport:  node.Transport,
 			PublicHost: node.PublicHost,
 			PublicPort: node.PublicPort,
@@ -123,38 +105,32 @@ func (r *Router) GetNode(nodeID string) *router.Node {
 		return nil
 	}
 
-	return &router.Node{Transport: node.Transport, NodeID: nodeID, PublicHost: node.PublicHost, PublicPort: node.PublicPort, Functions: node.Functions, LastSeen: node.LastSeen}
+	return node
 }
 
 func (r *Router) Remove(nodeID string) error {
-	if r.knownNodes[nodeID] == nil {
-		return ErrRouterUnknownNode
+	_, err := r.knownNodesRepo.Delete(nodeID)
+	if err != nil {
+		return err
 	}
-
-	r.knownNodesLock.Lock()
-	defer r.knownNodesLock.Unlock()
-
-	delete(r.knownNodes, nodeID)
 
 	return nil
 }
 
 func (r *Router) UpdateLastSeen(knownNodeID string, lastSeenAt int64) {
-	r.knownNodesLock.Lock()
-	defer r.knownNodesLock.Unlock()
-
-	r.knownNodes[knownNodeID].LastSeen = lastSeenAt
+	r.knownNodesRepo.UpdateLastSeen(knownNodeID, lastSeenAt)
 }
 
-func (r *Router) KnownNodes() *map[string]*router.Node {
-	return &r.knownNodes
+func (r *Router) KnownNodes() map[string]*router.Node {
+	return r.knownNodesRepo.GetAll()
 }
 
 func (r *Router) GetTarget(deliveryMethod delivery.Type, targetFunction string, targetNodeID string) []*router.Node {
 	var targetNodes []*router.Node = make([]*router.Node, 0)
+	var knownNodes = r.KnownNodes()
 
 	if deliveryMethod == delivery.All {
-		for _, node := range r.knownNodes {
+		for _, node := range knownNodes {
 			targetNodes = append(targetNodes, node)
 		}
 
@@ -164,11 +140,11 @@ func (r *Router) GetTarget(deliveryMethod delivery.Type, targetFunction string, 
 
 	if deliveryMethod == delivery.Random {
 
-		if len(r.knownNodes) > 0 {
+		if len(knownNodes) > 0 {
 			var node *router.Node
 			var nodes = make([]*router.Node, 0)
 
-			for _, node := range r.knownNodes {
+			for _, node := range knownNodes {
 				nodes = append(nodes, node)
 			}
 

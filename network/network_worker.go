@@ -45,7 +45,7 @@ L:
 func NewHeartbeat(config *params.NetworkConfig, fromID string, targetID string, targetFunction string) Packet {
 	knownNodes := make(map[string]packet.Node)
 
-	for nodeID, node := range manager.router.knownNodes {
+	for nodeID, node := range manager.router.KnownNodes() {
 		knownNodes[nodeID] = packet.Node{
 			NodeID:     node.NodeID,
 			Transport:  node.Transport,
@@ -74,6 +74,6 @@ func NewHeartbeat(config *params.NetworkConfig, fromID string, targetID string, 
 		beatBody.PublicHost = tcpSettings.PublicHost
 		beatBody.PublicPort = tcpSettings.PublicPort
 	}
-	// fmt.Println(beatBody)
+
 	return NewPacket(delivery.All, packet.Heartbeat, fromID, targetID, targetFunction, beatBody, nil)
 }

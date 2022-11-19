@@ -25,11 +25,18 @@ import (
 	"github.com/block-api/block-node/block/sys/model"
 	"github.com/block-api/block-node/db"
 	"github.com/block-api/block-node/log"
+	"github.com/block-api/block-node/network/router"
 	"github.com/block-api/block-node/params"
 )
 
-var knownNodeRepo *KnownNodeRepo
-var knownNodeRepoLock = new(sync.Mutex)
+var (
+	knownNodeRepo     *KnownNodeRepo
+	knownNodeRepoLock = new(sync.Mutex)
+)
+
+var (
+	ErrNodeIDDoesNotExist = errors.New("node id does not exist")
+)
 
 type KnownNodeRepo struct {
 	db              *db.LevelDB
@@ -71,7 +78,7 @@ func (r *KnownNodeRepo) Has(nodeID string) (bool, error) {
 	return r.db.DB.Has([]byte(nodeID), nil)
 }
 
-func (r *KnownNodeRepo) Add(nodeID string, node model.KnownNode) error {
+func (r *KnownNodeRepo) Add(nodeID string, node router.Node) error {
 	bytes, err := json.Marshal(node)
 	if err != nil {
 		return nil
@@ -95,7 +102,7 @@ func (r *KnownNodeRepo) Add(nodeID string, node model.KnownNode) error {
 	return r.counterRepo.Put(r.dbName, knCounter.Value)
 }
 
-func (r *KnownNodeRepo) Get(nodeID string) (*model.KnownNode, error) {
+func (r *KnownNodeRepo) Get(nodeID string) (*router.Node, error) {
 	nidBytes := []byte(nodeID)
 
 	hasNodeID, err := r.db.DB.Has(nidBytes, nil)
@@ -109,7 +116,7 @@ func (r *KnownNodeRepo) Get(nodeID string) (*model.KnownNode, error) {
 			return nil, err
 		}
 
-		var knownNode model.KnownNode
+		var knownNode router.Node
 		err = json.Unmarshal(resBytes, &knownNode)
 		if err != nil {
 			return nil, err
@@ -120,6 +127,68 @@ func (r *KnownNodeRepo) Get(nodeID string) (*model.KnownNode, error) {
 	return nil, errors.New("node id not found")
 }
 
-func (r *KnownNodeRepo) GetAll() ([]*model.KnownNode, error) {
-	return nil, nil
+func (r *KnownNodeRepo) Delete(nodeID string) (bool, error) {
+	has, err := r.db.DB.Has([]byte(nodeID), nil)
+	if err != nil {
+		return false, err
+	}
+
+	if has {
+		r.counterRepoLock.Lock()
+		defer r.counterRepoLock.Unlock()
+
+		knCounter, err := r.counterRepo.Get(r.dbName)
+		if err != nil {
+			return false, err
+		}
+
+		err = r.db.DB.Delete([]byte(nodeID), nil)
+		if err != nil {
+			return false, err
+		}
+
+		knCounter.Value -= 1
+		r.counterRepo.Put(r.dbName, knCounter.Value)
+
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func (r *KnownNodeRepo) UpdateLastSeen(nodeID string, lastSeen int64) error {
+	dbEntry, err := r.Get(nodeID)
+	if err != nil {
+		return err
+	}
+
+	dbEntry.LastSeen = lastSeen
+	bytes, err := json.Marshal(dbEntry)
+	if err != nil {
+		return nil
+	}
+
+	err = r.db.DB.Put([]byte(nodeID), bytes, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *KnownNodeRepo) GetAll() map[string]*router.Node {
+	var knownNodes = make(map[string]*router.Node)
+
+	iter := r.db.DB.NewIterator(nil, nil)
+	for iter.Next() {
+		var node = new(router.Node)
+		value := iter.Value()
+
+		json.Unmarshal(value, node)
+
+		key := iter.Key()
+		knownNodes[string(key)] = node
+	}
+
+	return knownNodes
 }

@@ -22,10 +22,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/block-api/block-node/block/function"
 	"io"
 	"net"
 	"time"
+
+	"github.com/block-api/block-node/block/function"
 
 	"github.com/block-api/block-node/log"
 	"github.com/block-api/block-node/network/packet"
@@ -135,20 +136,20 @@ func listenerConnWorker(networkManager *Manager, nodeID string, conn net.Conn, c
 		json.Unmarshal(bodyBytes, &heartbeatBody)
 
 		networkManager.router.UpdateLastSeen(decodedPacket.FromID, time.Now().UnixMilli())
-
 		// add known nodes
 		for bodyNodeID, bodyNode := range heartbeatBody.KnownNodes {
 			if bodyNodeID == networkManager.nodeID {
-				// log.Default("self id, skip known node")
 				continue
 			}
-			networkManager.router.Add(bodyNodeID, &router.Node{
+
+			err := networkManager.router.Add(bodyNodeID, &router.Node{
 				Transport:  bodyNode.Transport,
 				NodeID:     bodyNode.NodeID,
 				PublicHost: bodyNode.PublicHost,
 				PublicPort: bodyNode.PublicPort,
 				Functions:  bodyNode.Functions,
 			})
+			log.Default(err.Error())
 		}
 
 		return
@@ -164,6 +165,7 @@ func listenerConnWorker(networkManager *Manager, nodeID string, conn net.Conn, c
 		reqFn := function.Request{}
 		resFn := function.Response{}
 		log.Default("XxXxXxXxXxXxXxXxx")
+		// TODO: dd
 		fnResponse, fnErr := fn(&reqFn, &resFn)
 		if fnErr != nil {
 			log.Warning(fnErr.Error())
