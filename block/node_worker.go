@@ -32,7 +32,7 @@ L:
 	for {
 		select {
 		case <-ticker.C:
-			log.Warning("nodeWorker ticker")
+			// log.Debug("nodeWorker ticker")
 
 			// n.networkManager.GetFunction("sys.status")
 

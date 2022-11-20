@@ -100,6 +100,7 @@ func (m *Manager) Start() error {
 	// m.wgStop.Add(1)
 
 	go m.senderWorker(m.nodeID, m.config, &m.transport, m.cStopSenderWorker, m.cSend, m.wgStop)
+	go m.senderWorker(m.nodeID, m.config, &m.transport, m.cStopSenderWorker, m.cSend, m.wgStop)
 
 	// m.wgStop.Add(1)
 

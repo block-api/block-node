@@ -54,6 +54,7 @@ func (tr TCPTransport) Start(cReceive chan<- Packet) error {
 	if err != nil {
 		return err
 	}
+
 	listener, err := startTCPListener(&tcpSettings)
 	if err != nil {
 		return err
@@ -62,7 +63,7 @@ func (tr TCPTransport) Start(cReceive chan<- Packet) error {
 	defer func(listener net.Listener) {
 		err := listener.Close()
 		if err != nil {
-			log.Warning(err.Error())
+			log.Debug(err.Error())
 		}
 	}(listener)
 
@@ -77,6 +78,7 @@ func (tr TCPTransport) Start(cReceive chan<- Packet) error {
 func startTCPListener(tcpSettings *params.NetworkTCPSettings) (net.Listener, error) {
 	listenAt := tcpSettings.BindHost + ":" + tcpSettings.BindPort
 	listener, err := net.Listen("tcp", listenAt)
+
 	if err != nil {
 		return nil, err
 	}
@@ -118,6 +120,7 @@ func listenerConnWorker(networkManager *Manager, nodeID string, conn net.Conn, c
 		_, _ = conn.Write(EncodePacket(ErrInvalidHeader))
 		return
 	}
+	conn.Write(make([]byte, 0))
 	_ = conn.Close()
 
 	data = data[len(Header):]
@@ -139,7 +142,8 @@ func listenerConnWorker(networkManager *Manager, nodeID string, conn net.Conn, c
 	// log.Default("====")
 
 	if decodedPacket.ResponseHash != nil {
-		log.Warning("==== PROCESS RESPONSE HASH ===")
+		// log.Warning("==== PROCESS RESPONSE HASH ===")
+		// fmt.Println(decodedPacket)
 		return
 	}
 
@@ -156,14 +160,14 @@ func listenerConnWorker(networkManager *Manager, nodeID string, conn net.Conn, c
 				continue
 			}
 
-			err := networkManager.router.Add(bodyNodeID, &router.Node{
+			_ = networkManager.router.Add(bodyNodeID, &router.Node{
 				Transport:  bodyNode.Transport,
 				NodeID:     bodyNode.NodeID,
 				PublicHost: bodyNode.PublicHost,
 				PublicPort: bodyNode.PublicPort,
 				Functions:  bodyNode.Functions,
 			})
-			log.Default(err.Error())
+			// log.Default(err.Error())
 		}
 
 		return
@@ -172,7 +176,7 @@ func listenerConnWorker(networkManager *Manager, nodeID string, conn net.Conn, c
 	if decodedPacket.Type == packet.Function {
 		fn, err := networkManager.functionManager.Get(decodedPacket.TargetNodeFunction)
 		if err != nil {
-			log.Warning(err.Error())
+			log.Debug(err.Error())
 			return
 		}
 
@@ -182,7 +186,7 @@ func listenerConnWorker(networkManager *Manager, nodeID string, conn net.Conn, c
 		// TODO: dd
 		fnResponse, fnErr := fn(&reqFn, &resFn)
 		if fnErr != nil {
-			log.Warning(fnErr.Error())
+			log.Debug(fnErr.Error())
 		}
 
 		// send it back
@@ -216,14 +220,14 @@ func (tr TCPTransport) Send(sendPacket Packet) {
 		servAddr := targetNode.PublicHost + ":" + targetNode.PublicPort
 		tcpAddr, err := net.ResolveTCPAddr("tcp", servAddr)
 		if err != nil {
-			log.Warning(err.Error())
+			log.Debug(err.Error())
 			// println("ResolveTCPAddr failed:", err.Error())
 			continue
 		}
-		log.Default(servAddr)
+		// log.Default(servAddr)
 		conn, err := net.DialTCP("tcp", nil, tcpAddr)
 		if err != nil {
-			log.Warning(err.Error())
+			log.Debug(err.Error())
 			continue
 		}
 		// fmt.Println(sendPacket)
@@ -231,12 +235,12 @@ func (tr TCPTransport) Send(sendPacket Packet) {
 		_, err = conn.Write(packetBytes)
 		if err != nil {
 			_ = conn.Close()
-			log.Warning(err.Error())
+			log.Debug(err.Error())
 			continue
 		}
 
 		_ = conn.Close()
-		log.Default("packet sent to node: " + string(sendPacket.Delivery))
+		log.Debug("packet sent to node: " + string(sendPacket.Delivery))
 		// eventManager := event.GetManager()
 		// eventManager.On(string(sendPacket.Hash), waitForResponse)
 

@@ -18,8 +18,6 @@
 package params
 
 import (
-	"fmt"
-
 	"github.com/block-api/block-node/network/transport"
 	"gopkg.in/yaml.v3"
 )
@@ -70,7 +68,6 @@ type NetworkRedisSettings struct{}
 func GetNetworkSettings[T NetworkTCPSettings | NetworkRedisSettings](config *NetworkConfig) (T, error) {
 	var settings T
 
-	fmt.Println(config.Settings)
 	settingsBytes, err := yaml.Marshal(config.Settings)
 	if err != nil {
 		return settings, err

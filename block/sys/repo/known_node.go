@@ -64,7 +64,7 @@ func GetKnownNode() *KnownNodeRepo {
 func (r *KnownNodeRepo) Count() int64 {
 	resCounter, err := r.counterRepo.Get(r.dbName)
 	if err != nil {
-		log.Warning(err.Error())
+		log.Debug(err.Error())
 		return -1
 	}
 

@@ -19,7 +19,6 @@ package network
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 
 	"github.com/block-api/block-node/block/function"
@@ -58,17 +57,18 @@ func sendPacketWorker(m *Manager, config *params.NetworkConfig, sendPacket Packe
 	if m.nodeID == sendPacket.TargetID && sendPacket.TargetNodeFunction != "" {
 		fn, err := m.GetFunction(sendPacket.TargetNodeFunction)
 		if err != nil {
-			log.Warning(err.Error())
+			log.Debug(err.Error())
 			return
 		}
 
 		reqFn := function.NewRequest(sendPacket.FromID, sendPacket.Body)
 		resFn := function.NewResponse()
 
-		fnResponse, fnErr := fn(&reqFn, &resFn)
-		fmt.Println("---- SHOULD SEND TO SELF -- CALL FUNC LOCALLY ----")
-		fmt.Println(fnResponse)
-		fmt.Println(fnErr)
+		_, _ = fn(&reqFn, &resFn)
+		// fnResponse, fnErr := fn(&reqFn, &resFn)
+		// fmt.Println("---- SHOULD SEND TO SELF -- CALL FUNC LOCALLY ----")
+		// fmt.Println(fnResponse)
+		// fmt.Println(fnErr)
 
 		return
 	}

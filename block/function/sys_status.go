@@ -25,7 +25,7 @@ type SysStatusResponse struct {
 }
 
 func SysStatusFunction(req *Request, res *Response) (*Response, error) {
-	log.Warning("-- SysStatusFunction --")
+	log.Debug("-- SysStatusFunction --")
 
 	// panic("xxxxx")
 	res.Body = "response from SysStatusFunction"
