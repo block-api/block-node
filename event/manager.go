@@ -51,7 +51,11 @@ func NewManager() (*Manager, error) {
 	return nil, ErrAlreadyInstantiated
 }
 
-func (m *Manager) On(eventName string, callback Listener) {
+func GetManager() *Manager {
+	return manager
+}
+
+func (m *Manager) On(eventName string, callback Listener) int {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
@@ -60,10 +64,12 @@ func (m *Manager) On(eventName string, callback Listener) {
 	}
 
 	m.eventsCallbacks[eventName] = append(m.eventsCallbacks[eventName], callback)
+
+	return len(m.eventsCallbacks[eventName]) - 1
 }
 
 func (m *Manager) Emit(e Event) error {
-	if m.eventsCallbacks[e.Name] == nil {
+	if m.eventsCallbacks[string(e.Name)] == nil {
 		return ErrNameDoesNotExist
 	}
 
@@ -71,6 +77,6 @@ func (m *Manager) Emit(e Event) error {
 		for _, listener := range listeners {
 			listener(e)
 		}
-	}(e, m.eventsCallbacks[e.Name])
+	}(e, m.eventsCallbacks[string(e.Name)])
 	return nil
 }

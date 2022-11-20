@@ -19,7 +19,6 @@ package function
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 type Request struct {
@@ -39,8 +38,8 @@ func DecodeBody[T any](body any) T {
 
 	bodyBytes, _ := json.Marshal(body)
 
-	e := json.Unmarshal(bodyBytes, &out)
-	fmt.Println(e)
-	fmt.Println(out)
+	_ = json.Unmarshal(bodyBytes, &out)
+	// fmt.Println(e)
+	// fmt.Println(out)
 	return out
 }

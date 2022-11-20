@@ -27,8 +27,10 @@ import (
 	"time"
 
 	"github.com/block-api/block-node/block/function"
+	"github.com/block-api/block-node/event"
 
 	"github.com/block-api/block-node/log"
+	"github.com/block-api/block-node/network/delivery"
 	"github.com/block-api/block-node/network/packet"
 	"github.com/block-api/block-node/network/router"
 	"github.com/block-api/block-node/network/transport"
@@ -121,6 +123,7 @@ func listenerConnWorker(networkManager *Manager, nodeID string, conn net.Conn, c
 	data = data[len(Header):]
 	decodedPacket := DecodePacket(data)
 
+	// fmt.Println(data)
 	err := decodedPacket.Validate()
 	if err != nil {
 		log.Debug(err.Error())
@@ -128,6 +131,17 @@ func listenerConnWorker(networkManager *Manager, nodeID string, conn net.Conn, c
 	}
 
 	log.Debug("network::tcp_transport::connection_worker::received_packet")
+
+	// log.Default("IS RESPONSE HASH")
+	// fmt.Println(decodedPacket.Type)
+	// fmt.Println(decodedPacket.TargetID)
+	// fmt.Println(decodedPacket.ResponseHash)
+	// log.Default("====")
+
+	if decodedPacket.ResponseHash != nil {
+		log.Warning("==== PROCESS RESPONSE HASH ===")
+		return
+	}
 
 	if decodedPacket.Type == packet.Heartbeat {
 		var heartbeatBody packet.HeartbeatBody
@@ -164,7 +178,7 @@ func listenerConnWorker(networkManager *Manager, nodeID string, conn net.Conn, c
 
 		reqFn := function.Request{}
 		resFn := function.Response{}
-		log.Default("XxXxXxXxXxXxXxXxx")
+
 		// TODO: dd
 		fnResponse, fnErr := fn(&reqFn, &resFn)
 		if fnErr != nil {
@@ -172,18 +186,28 @@ func listenerConnWorker(networkManager *Manager, nodeID string, conn net.Conn, c
 		}
 
 		// send it back
-		fmt.Println(fnResponse.Body)
+		// log.Default("SEND IT BACK >>>>")
+		// fmt.Println(fnResponse.Body)
+
+		resPacket := NewPacket(delivery.All, packet.Function, networkManager.nodeID, decodedPacket.FromID, "", fnResponse, &decodedPacket.Hash)
+		networkManager.Send(resPacket)
+		// log.Default("<<<< SENT")
+		// eventManager := event.GetManager()
+		// eventManager.Emit(event.Event{
+		// 	Name:    decodedPacket.Hash,
+		// 	Payload: fnResponse,
+		// })
 	}
 }
 
 func (tr TCPTransport) Stop() error {
-	log.Debug("-- tcp_transport::stop --")
+	log.Debug("network::transport:tcp::stop")
 
 	return nil
 }
 
 func (tr TCPTransport) Send(sendPacket Packet) {
-	log.Debug("-- tcp_transport::send --")
+	log.Debug("network::transport::tcp::send")
 
 	targetNodes := tr.networkManager.router.GetTarget(sendPacket.Delivery, sendPacket.TargetNodeFunction, sendPacket.TargetID)
 
@@ -192,16 +216,17 @@ func (tr TCPTransport) Send(sendPacket Packet) {
 		servAddr := targetNode.PublicHost + ":" + targetNode.PublicPort
 		tcpAddr, err := net.ResolveTCPAddr("tcp", servAddr)
 		if err != nil {
-			println("ResolveTCPAddr failed:", err.Error())
+			log.Warning(err.Error())
+			// println("ResolveTCPAddr failed:", err.Error())
 			continue
 		}
-
+		log.Default(servAddr)
 		conn, err := net.DialTCP("tcp", nil, tcpAddr)
 		if err != nil {
 			log.Warning(err.Error())
 			continue
 		}
-
+		// fmt.Println(sendPacket)
 		packetBytes, _ := sendPacket.Bytes()
 		_, err = conn.Write(packetBytes)
 		if err != nil {
@@ -212,5 +237,18 @@ func (tr TCPTransport) Send(sendPacket Packet) {
 
 		_ = conn.Close()
 		log.Default("packet sent to node: " + string(sendPacket.Delivery))
+		// eventManager := event.GetManager()
+		// eventManager.On(string(sendPacket.Hash), waitForResponse)
+
+		// eventManager.Emit(event.Event{
+		// 	Name:    decodedPacket.Hash,
+		// 	Payload: fnResponse,
+		// })
 	}
+}
+
+func waitForResponse(e event.Event) {
+	// var timer = time.NewTimer(time.Second)
+
+	// config.Get
 }

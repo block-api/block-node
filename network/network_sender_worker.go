@@ -20,10 +20,11 @@ package network
 import (
 	"errors"
 	"fmt"
+	"sync"
+
 	"github.com/block-api/block-node/block/function"
 	"github.com/block-api/block-node/log"
 	"github.com/block-api/block-node/params"
-	"sync"
 )
 
 var (
@@ -42,6 +43,7 @@ L:
 		case packet := <-cSend:
 			// todo: limiting rate X / s
 			log.Debug("network::sender_worker::received_packet")
+
 			go sendPacketWorker(m, config, packet, transpo)
 
 			continue

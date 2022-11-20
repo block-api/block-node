@@ -20,7 +20,7 @@ package event
 type Listener func(e Event)
 
 type Event struct {
-	Name    string
+	Name    []byte
 	Payload interface{}
 	Error   error
 }

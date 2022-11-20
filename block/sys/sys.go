@@ -27,4 +27,6 @@ import (
 func EventCallback(e event.Event) {
 	log.Default("---> received Event")
 	fmt.Println(e)
+
+	panic("xxx")
 }

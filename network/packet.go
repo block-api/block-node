@@ -82,7 +82,7 @@ func (p *Packet) Validate() error {
 
 	hash := crypto.Keccak256(bodyBytes, []byte(p.Delivery), []byte(p.Type), []byte(p.FromID), []byte(p.TargetID), []byte(strconv.FormatInt(p.CreatedAt, 10)))
 
-	if bytes.Compare(hash, p.Hash) == 0 {
+	if bytes.Equal(hash, p.Hash) {
 		return nil
 	}
 
@@ -109,26 +109,21 @@ func DecodePacket(data []byte) Packet {
 		bodyBytes, _ := json.Marshal(decodedPacket.Body)
 		_ = json.Unmarshal(bodyBytes, &bodyHeartbeat)
 		decodedPacket.Body = bodyHeartbeat
-
-		break
 	case packet.Cmd:
 		var bodyCmd packet.CmdBody
 
 		bodyBytes, _ := json.Marshal(decodedPacket.Body)
 		_ = json.Unmarshal(bodyBytes, &bodyCmd)
 		decodedPacket.Body = bodyCmd
-
-		break
 	case packet.Function:
 		var bodyCmd packet.FunctionBody
 
 		bodyBytes, _ := json.Marshal(decodedPacket.Body)
 		_ = json.Unmarshal(bodyBytes, &bodyCmd)
-		decodedPacket.Body = bodyCmd
-
-		break
+		if bodyCmd.Payload != nil {
+			decodedPacket.Body = bodyCmd
+		}
 	default:
-		break
 	}
 
 	return decodedPacket

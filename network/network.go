@@ -19,11 +19,9 @@ package network
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 
 	"github.com/block-api/block-node/block/function"
-	"github.com/block-api/block-node/log"
 	"github.com/block-api/block-node/network/transport"
 	"github.com/block-api/block-node/params"
 )
@@ -132,8 +130,6 @@ func (n *Manager) Send(packet Packet) error {
 		return err
 	}
 
-	log.Default("### SEND ###")
-	fmt.Println(packet)
 	n.cSendLock.Lock()
 	n.cSend <- packet
 	n.cSendLock.Unlock()

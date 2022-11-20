@@ -127,8 +127,16 @@ func (r *Router) KnownNodes() map[string]*router.Node {
 
 func (r *Router) GetTarget(deliveryMethod delivery.Type, targetFunction string, targetNodeID string) []*router.Node {
 	var targetNodes []*router.Node = make([]*router.Node, 0)
-	var knownNodes = r.KnownNodes()
 
+	if targetNodeID != "" {
+		targetNode := r.GetNode(targetNodeID)
+		if targetNode != nil {
+			targetNodes = append(targetNodes, targetNode)
+		}
+		return targetNodes
+	}
+
+	var knownNodes = r.KnownNodes()
 	if deliveryMethod == delivery.All {
 		for _, node := range knownNodes {
 			targetNodes = append(targetNodes, node)
